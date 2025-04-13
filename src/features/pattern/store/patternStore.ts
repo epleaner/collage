@@ -1,45 +1,77 @@
 import { create } from 'zustand';
-import { Pattern, PatternState, PatternApplication } from '../types/pattern.types';
-import { v4 as uuidv4 } from 'uuid';
 
-const initialState: PatternState = {
-  patterns: [],
-  selectedPatternId: null,
-  activePatternId: null,
+export type Pattern = {
+  id: string;
+  name: string;
+  shapeMasks: Array<{
+    type: 'circle' | 'triangle' | 'rectangle';
+    dimensions: { width: number; height: number };
+    position: { x: number; y: number };
+    rotation: number;
+  }>;
 };
 
-export const usePatternStore = create<PatternState & {
-  addPattern: (pattern: Omit<Pattern, 'id'>) => void;
-  removePattern: (id: string) => void;
-  updatePattern: (id: string, updates: Partial<Pattern>) => void;
-  selectPattern: (id: string | null) => void;
-  setActivePattern: (id: string | null) => void;
-  applyPattern: (application: PatternApplication) => void;
-}>((set) => ({
-  ...initialState,
+type PatternStore = {
+  patterns: Pattern[];
+  currentPatternIndex: number;
+  setCurrentPatternIndex: (index: number) => void;
+};
 
-  addPattern: (pattern) => set((state) => ({
-    patterns: [...state.patterns, { ...pattern, id: uuidv4() }],
-  })),
+const createRowOfRectangles = (): Pattern => ({
+  id: 'row-of-rectangles',
+  name: 'Row of Rectangles',
+  shapeMasks: Array.from({ length: 5 }, (_, i) => ({
+    type: 'rectangle' as const,
+    dimensions: { width: 150, height: 200 },
+    position: { x: 20 + (i * 15), y: 50 },
+    rotation: 0
+  }))
+});
 
-  removePattern: (id) => set((state) => ({
-    patterns: state.patterns.filter((pattern) => pattern.id !== id),
-    selectedPatternId: state.selectedPatternId === id ? null : state.selectedPatternId,
-    activePatternId: state.activePatternId === id ? null : state.activePatternId,
-  })),
+const createCenterCircle = (): Pattern => ({
+  id: 'center-circle',
+  name: 'Center Circle',
+  shapeMasks: [{
+    type: 'circle' as const,
+    dimensions: { width: 400, height: 400 },
+    position: { x: 50, y: 50 },
+    rotation: 0
+  }]
+});
 
-  updatePattern: (id, updates) => set((state) => ({
-    patterns: state.patterns.map((pattern) =>
-      pattern.id === id ? { ...pattern, ...updates } : pattern
-    ),
-  })),
+const createSquigglyLines = (): Pattern => ({
+  id: 'squiggly-lines',
+  name: 'Squiggly Lines',
+  shapeMasks: Array.from({ length: 5 }, (_, i) => ({
+    type: 'rectangle' as const,
+    dimensions: { width: 50, height: 300 },
+    position: { x: 20 + (i * 20), y: 50 },
+    rotation: i * 15
+  }))
+});
 
-  selectPattern: (id) => set({ selectedPatternId: id }),
+const createTriangleGrid = (): Pattern => ({
+  id: 'triangle-grid',
+  name: 'Triangle Grid',
+  shapeMasks: Array.from({ length: 9 }, (_, i) => {
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    return {
+      type: 'triangle' as const,
+      dimensions: { width: 150, height: 150 },
+      position: { x: 25 + (col * 25), y: 25 + (row * 25) },
+      rotation: (i % 2) * 180
+    };
+  })
+});
 
-  setActivePattern: (id) => set({ activePatternId: id }),
-
-  applyPattern: (application) => {
-    // This will be implemented when we create the pattern application logic
-    console.log('Applying pattern:', application);
-  },
+export const usePatternStore = create<PatternStore>((set) => ({
+  patterns: [
+    createRowOfRectangles(),
+    createCenterCircle(),
+    createSquigglyLines(),
+    createTriangleGrid()
+  ],
+  currentPatternIndex: 0,
+  setCurrentPatternIndex: (index) => set({ currentPatternIndex: index })
 })); 

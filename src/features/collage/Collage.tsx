@@ -1,122 +1,60 @@
 import { useEffect } from 'react';
 import { usePatternStore } from '../pattern/store/patternStore';
-import { useLayerStore } from '../layer/store/layerStore';
-import { createDefaultGridPattern } from '../pattern/utils/pattern.utils';
 import { ImageLayer, GifLayer, VideoLayer, ShapeType } from '../layer/types/layer.types';
 
 const Collage = () => {
-  const { addPattern, patterns } = usePatternStore();
-  const { addLayer, layers } = useLayerStore();
+  const { patterns, currentPatternIndex, setCurrentPatternIndex } = usePatternStore();
 
   useEffect(() => {
-    // Create a grid pattern for our collage
-    const gridPattern = createDefaultGridPattern('Media Collage');
-    addPattern(gridPattern);
-
-    // Create base image layer (no shape masks)
-    addLayer({
-      id: 'base-image',
-      type: 'image',
-      name: 'Base Image',
-      src: '/media/animal.jpg',
-      transform: {
-        position: { x: 0, y: 0 },
-        scale: 1,
-        rotation: 0,
-        opacity: 1
-      },
-      visible: true,
-      locked: false,
-      zIndex: 0,
-      shapeMasks: [] // No shape masks for base layer
-    } as ImageLayer);
-
-    // Create layers for other media types with shape masks
-    const mediaLayers = [
-      {
-        type: 'gif' as const,
-        src: '/media/flower.gif',
-        name: 'Flower GIF',
-        shapeMasks: [
-          {
-            type: 'rectangle' as ShapeType,
-            dimensions: { width: 400, height: 200 },
-            position: { x: 25, y: 25 }, // 25% from left and top
-            rotation: 45
-          }
-        ]
-      },
-      {
-        type: 'video' as const,
-        src: '/media/video.mp4',
-        name: 'Video',
-        shapeMasks: [
-          {
-            type: 'triangle' as ShapeType,
-            dimensions: { width: 300, height: 300 },
-            position: { x: 75, y: 75 },
-            rotation: 0
-          },
-          {
-            type: 'circle' as ShapeType,
-            dimensions: { width: 200, height: 200 },
-            position: { x: 25, y: 75 },
-            rotation: 0
-          },
-          {
-            type: 'rectangle' as ShapeType,
-            dimensions: { width: 250, height: 150 },
-            position: { x: 50, y: 25 },
-            rotation: 30
-          },
-          {
-            type: 'triangle' as ShapeType,
-            dimensions: { width: 180, height: 180 },
-            position: { x: 85, y: 25 },
-            rotation: 180
-          }
-        ]
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const key = parseInt(e.key);
+      if (!isNaN(key) && key >= 1 && key <= patterns.length) {
+        setCurrentPatternIndex(key - 1);
       }
-    ];
+    };
 
-    mediaLayers.forEach((media, index) => {
-      const baseLayer = {
-        id: `layer-${index + 1}`, // Start from 1 since base is 0
-        name: media.name,
-        transform: {
-          position: { x: 0, y: 0 },
-          scale: 1,
-          rotation: 0,
-          opacity: 1
-        },
-        visible: true,
-        locked: false,
-        zIndex: index + 1, // Higher zIndex than base layer
-        shapeMasks: media.shapeMasks
-      };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [patterns.length, setCurrentPatternIndex]);
 
-      switch (media.type) {
-        case 'gif':
-          addLayer({
-            ...baseLayer,
-            type: 'gif',
-            src: media.src,
-            frameRate: 30
-          } as GifLayer);
-          break;
-        case 'video':
-          addLayer({
-            ...baseLayer,
-            type: 'video',
-            src: media.src,
-            currentTime: 0,
-            duration: 0,
-            playing: true
-          } as VideoLayer);
-          break;
-      }
-    });
-  }, []);
+  // Create base image layer (no shape masks)
+  const baseLayer: ImageLayer = {
+    id: 'base-image',
+    type: 'image',
+    name: 'Base Image',
+    src: '/media/animal.jpg',
+    transform: {
+      position: { x: 0, y: 0 },
+      scale: 1,
+      rotation: 0,
+      opacity: 1
+    },
+    visible: true,
+    locked: false,
+    zIndex: 0,
+    shapeMasks: []
+  };
+
+  // Create second layer with current pattern
+  const secondLayer: VideoLayer = {
+    id: 'pattern-layer',
+    type: 'video',
+    name: 'Pattern Layer',
+    src: '/media/video.mp4',
+    transform: {
+      position: { x: 0, y: 0 },
+      scale: 1,
+      rotation: 0,
+      opacity: 1
+    },
+    visible: true,
+    locked: false,
+    zIndex: 1,
+    shapeMasks: patterns[currentPatternIndex].shapeMasks,
+    currentTime: 0,
+    duration: 0,
+    playing: true
+  };
 
   const getShapePathData = (shape: ShapeType, dimensions: { width: number; height: number }) => {
     const { width, height } = dimensions;
@@ -175,7 +113,6 @@ const Collage = () => {
       }
     };
 
-    // Create a single media container with multiple masks
     return (
       <div key={layer.id} style={layerStyle}>
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -215,7 +152,19 @@ const Collage = () => {
       overflow: 'hidden',
       backgroundColor: '#f0f0f0'
     }}>
-      {layers.map(renderLayer)}
+      {renderLayer(baseLayer)}
+      {renderLayer(secondLayer)}
+      <div style={{
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: 5
+      }}>
+        Current Pattern: {patterns[currentPatternIndex].name} (Press 1-{patterns.length} to switch)
+      </div>
     </div>
   );
 };
