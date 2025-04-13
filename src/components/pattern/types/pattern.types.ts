@@ -1,5 +1,3 @@
-import { Layer } from '../../layer/types/layer.types';
-
 export type PatternType = 'grid' | 'spiral' | 'random' | 'custom';
 
 export interface BasePattern {

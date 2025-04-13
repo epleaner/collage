@@ -4,10 +4,11 @@ export type Pattern = {
   id: string;
   name: string;
   shapeMasks: Array<{
-    type: 'circle' | 'triangle' | 'rectangle';
+    type: 'circle' | 'triangle' | 'rectangle' | 'custom';
     dimensions: { width: number; height: number };
     position: { x: number; y: number };
     rotation: number;
+    pathData?: string;
   }>;
 };
 
@@ -42,11 +43,17 @@ const createCenterCircle = (): Pattern => ({
 const createSquigglyLines = (): Pattern => ({
   id: 'squiggly-lines',
   name: 'Squiggly Lines',
-  shapeMasks: Array.from({ length: 5 }, (_, i) => ({
-    type: 'rectangle' as const,
-    dimensions: { width: 50, height: 300 },
-    position: { x: 20 + (i * 20), y: 50 },
-    rotation: i * 15
+  shapeMasks: Array.from({ length: 3 }, (_, i) => ({
+    type: 'custom' as const,
+    dimensions: { width: 400, height: 400 },
+    position: { x: 20 + (i * 30), y: 50 },
+    rotation: 0,
+    pathData: `M 0,200 
+               C ${50 + i * 20},${150 + i * 20} ${100 + i * 20},${250 + i * 20} ${200},${200}
+               C ${300 - i * 20},${150 - i * 20} ${350 - i * 20},${250 - i * 20} ${400},${200}
+               L ${400},${400}
+               L 0,${400}
+               Z`
   }))
 });
 

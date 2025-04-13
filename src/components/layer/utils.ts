@@ -1,0 +1,44 @@
+import { ShapeType } from '../layer/types/layer.types';
+
+export const getShapePathData = (shape: ShapeType, dimensions: { width: number; height: number }, customPathData?: string) => {
+    if (shape === 'custom') {
+        return customPathData;
+    }
+    const { width, height } = dimensions;
+    switch (shape) {
+        case 'circle':
+            const radius = width / 2;
+            return `M ${radius},0 A ${radius},${radius} 0 1,1 ${radius},${width} A ${radius},${radius} 0 1,1 ${radius},0 Z`;
+        case 'triangle':
+            return `M ${width / 2},0 L 0,${height} L ${width},${height} Z`;
+        case 'rectangle':
+            return `M 0,0 L ${width},0 L ${width},${height} L 0,${height} Z`;
+        default:
+            return '';
+    }
+};
+
+export const getMediaStyle = (shapeMasks: any[]): React.CSSProperties => {
+    return {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover' as const,
+        maskImage: shapeMasks.map(mask => {
+            const pathData = getShapePathData(mask.type, mask.dimensions, (mask as any).pathData);
+            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
+        }).join(', '),
+        WebkitMaskImage: shapeMasks.map(mask => {
+            const pathData = getShapePathData(mask.type, mask.dimensions, (mask as any).pathData);
+            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
+        }).join(', '),
+        maskSize: shapeMasks.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
+        WebkitMaskSize: shapeMasks.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
+        maskPosition: shapeMasks.map(mask => `${mask.position.x}% ${mask.position.y}%`).join(', '),
+        WebkitMaskPosition: shapeMasks.map(mask => `${mask.position.x}% ${mask.position.y}%`).join(', '),
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+        maskComposite: 'add',
+        WebkitMaskComposite: 'add'
+    };
+}; 

@@ -17,7 +17,7 @@ export interface Transform {
   opacity: number;
 }
 
-export type ShapeType = 'rectangle' | 'circle' | 'triangle';
+export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'custom';
 
 export interface ShapeMask {
   type: ShapeType;
