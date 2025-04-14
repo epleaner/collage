@@ -10,79 +10,40 @@ const LayerItem = ({ layer }: { layer: Layer }) => {
     const { patterns } = usePatternStore();
 
     return (
-        <div style={{
-            padding: '10px',
-            marginBottom: '10px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '5px'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="p-2.5 mb-2.5 bg-white/10 rounded">
+            <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2.5">
                     <button
                         onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
-                        style={{
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            color: 'white',
-                            padding: '5px',
-                            borderRadius: '3px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px'
-                        }}
+                        className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                     >
                         {layer.visible ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                 </div>
                 <button
                     onClick={() => removeLayer(layer.id)}
-                    style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: 'white',
-                        padding: '5px',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                    }}
+                    className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                 >
                     <Trash2 size={16} />
                 </button>
             </div>
-            <div style={{ marginTop: '10px' }}>
-                <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', color: 'white' }}>Source URL</label>
+            <div className="mt-2.5">
+                <div className="mb-2.5">
+                    <label className="block mb-1.5 text-white">Source URL</label>
                     <input
                         type="text"
                         value={layer.srcUrl}
                         onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
                         placeholder="Enter media URL"
-                        style={{
-                            width: '100%',
-                            padding: '5px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: '3px'
-                        }}
+                        className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
                     />
                 </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', color: 'white' }}>Pattern</label>
+                <div className="mb-2.5">
+                    <label className="block mb-1.5 text-white">Pattern</label>
                     <select
                         value={layer.patternId || ''}
                         onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
-                        style={{
-                            width: '100%',
-                            padding: '5px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: '3px'
-                        }}
+                        className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
                     >
                         <option value="">No Pattern</option>
                         {patterns.map(pattern => (
@@ -121,16 +82,7 @@ const AddLayerButton = () => {
     return (
         <button
             onClick={handleAddLayer}
-            style={{
-                backgroundColor: 'rgba(0, 255, 0, 0.3)',
-                border: 'none',
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                width: '100%',
-                marginBottom: '20px'
-            }}
+            className="w-full mb-5 p-2.5 text-white rounded cursor-pointer hover:border-white/20 border border-transparent transition-colors"
         >
             Add New Layer
         </button>
@@ -145,27 +97,14 @@ const Sidebar = () => {
 
     return (
         <div
-            style={{
-                position: 'fixed',
-                right: 0,
-                top: 0,
-                width: '300px',
-                height: '100vh',
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                color: 'white',
-                padding: '20px',
-                boxSizing: 'border-box',
-                zIndex: 1000,
-                overflowY: 'auto'
-            }}
+            className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto"
         >
-            <h2 style={{ marginTop: 0 }}>Layer Management</h2>
-            <AddLayerButton />
             <div>
                 {layers.map(layer => (
                     <LayerItem key={layer.id} layer={layer} />
                 ))}
             </div>
+            <AddLayerButton />
         </div>
     );
 };
