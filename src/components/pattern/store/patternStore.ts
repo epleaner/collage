@@ -78,7 +78,7 @@ export const usePatternStore = create<PatternStore>((set) => ({
     createRowOfRectangles(),
     createCenterCircle(),
     createSquigglyLines(),
-    createTriangleGrid()
+    createTriangleGrid(),
   ],
   currentPatternIndex: 0,
   setCurrentPatternIndex: (index) => set({ currentPatternIndex: index })

@@ -1,4 +1,3 @@
-export type LayerType = 'image' | 'gif' | 'video';
 
 export interface Position {
   x: number;
@@ -27,34 +26,19 @@ export interface ShapeMask {
   pathData?: string;
 }
 
-export interface BaseLayer {
+export interface Layer {
   id: string;
-  type: LayerType;
-  name: string;
   transform: Transform;
   visible: boolean;
   locked: boolean;
   zIndex: number;
   patternId: string | null;
   srcUrl: string;
-}
-
-export interface ImageLayer extends BaseLayer {
-  type: 'image';
-}
-
-export interface GifLayer extends BaseLayer {
-  type: 'gif';
+  currentTime?: number;
+  playing?: boolean;
   frameRate?: number;
 }
 
-export interface VideoLayer extends BaseLayer {
-  type: 'video';
-  currentTime?: number;
-  playing: boolean;
-}
-
-export type Layer = ImageLayer | GifLayer | VideoLayer;
 
 export interface LayerState {
   layers: Layer[];

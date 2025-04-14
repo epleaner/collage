@@ -1,14 +1,12 @@
-import { ImageLayer, GifLayer, VideoLayer } from '../layer/types/layer.types';
 import { useMediaStyle } from './hooks/useMediaStyle';
 import Media from './Media';
+import { Layer as LayerType } from './types/layer.types';
 
 interface LayerProps {
-    layer: ImageLayer | GifLayer | VideoLayer;
+    layer: LayerType;
 }
 
 const Layer = ({ layer }: LayerProps) => {
-    if (!layer.visible) return null;
-
     const layerStyle: React.CSSProperties = {
         position: 'absolute',
         width: '100vw',

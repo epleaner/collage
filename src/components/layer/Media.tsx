@@ -1,35 +1,48 @@
-import { ImageLayer, GifLayer, VideoLayer } from '../layer/types/layer.types';
-import { useEffect, useRef } from 'react';
+import { Layer } from '../layer/types/layer.types';
+import { useEffect, useRef, useState } from 'react';
 
 interface MediaProps {
-    layer: ImageLayer | GifLayer | VideoLayer;
+    layer: Layer;
     style: React.CSSProperties;
 }
 
+const getMediaType = (srcUrl: string): 'image' | 'gif' | 'video' => {
+    const extension = srcUrl.split('.').pop()?.toLowerCase();
+    if (extension === 'gif') return 'gif';
+    if (['mp4', 'webm', 'ogg'].includes(extension || '')) return 'video';
+    return 'image';
+};
+
 const Media = ({ layer, style }: MediaProps) => {
+    const [initialTime, setInitialTime] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const mediaType = getMediaType(layer.srcUrl);
 
     useEffect(() => {
-        if (layer.type === 'video' && videoRef.current) {
-            const videoLayer = layer as VideoLayer;
-            if (videoLayer.currentTime !== undefined) {
-                videoRef.current.currentTime = videoLayer.currentTime;
+        if (mediaType === 'video' && videoRef.current && !initialTime) {
+            if (layer.currentTime !== undefined) {
+                videoRef.current.currentTime = layer.currentTime;
+                setInitialTime(true);
             }
         }
-    }, [layer]);
+    }, [layer, mediaType]);
 
-    switch (layer.type) {
+    const mediaStyle = {
+        ...style,
+        opacity: layer.visible ? 1 : 0
+    };
+
+    switch (mediaType) {
         case 'image':
-            return <img src={layer.srcUrl} alt={layer.name} style={style} />;
         case 'gif':
-            return <img src={layer.srcUrl} alt={layer.name} style={style} />;
+            return <img src={layer.srcUrl} alt={layer.id} style={mediaStyle} />;
         case 'video':
             return (
                 <video
                     ref={videoRef}
                     src={layer.srcUrl}
-                    style={style}
-                    autoPlay
+                    style={mediaStyle}
+                    autoPlay={layer.playing}
                     loop
                     muted
                     playsInline

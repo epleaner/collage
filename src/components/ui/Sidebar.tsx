@@ -3,9 +3,10 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
+import { Trash2, Eye, EyeOff } from 'lucide-react';
 
 const LayerItem = ({ layer }: { layer: Layer }) => {
-    const { removeLayer, setLayerPattern, setLayerSrcUrl } = useLayerStore();
+    const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer } = useLayerStore();
     const { patterns } = usePatternStore();
 
     return (
@@ -16,61 +17,81 @@ const LayerItem = ({ layer }: { layer: Layer }) => {
             borderRadius: '5px'
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h3 style={{ margin: '0 0 5px 0' }}>{layer.name}</h3>
-                    <p style={{ margin: '0', fontSize: '0.9em', opacity: 0.8 }}>
-                        Type: {layer.type} | Visible: {layer.visible ? 'Yes' : 'No'}
-                    </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                        onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
+                        style={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            padding: '5px',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                        }}
+                    >
+                        {layer.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
                 </div>
                 <button
                     onClick={() => removeLayer(layer.id)}
                     style={{
-                        backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                        backgroundColor: 'transparent',
                         border: 'none',
                         color: 'white',
-                        padding: '5px 10px',
+                        padding: '5px',
                         borderRadius: '3px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
                     }}
                 >
-                    Delete
+                    <Trash2 size={16} />
                 </button>
             </div>
             <div style={{ marginTop: '10px' }}>
-                <input
-                    type="text"
-                    value={layer.srcUrl}
-                    onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
-                    placeholder="Enter media URL"
-                    style={{
-                        width: '100%',
-                        padding: '5px',
-                        marginBottom: '10px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '3px'
-                    }}
-                />
-                <select
-                    value={layer.patternId || ''}
-                    onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
-                    style={{
-                        width: '100%',
-                        padding: '5px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '3px'
-                    }}
-                >
-                    <option value="">No Pattern</option>
-                    {patterns.map(pattern => (
-                        <option key={pattern.id} value={pattern.id}>
-                            {pattern.name}
-                        </option>
-                    ))}
-                </select>
+                <div style={{ marginBottom: '10px' }}>
+                    <label style={{ display: 'block', marginBottom: '5px', color: 'white' }}>Source URL</label>
+                    <input
+                        type="text"
+                        value={layer.srcUrl}
+                        onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
+                        placeholder="Enter media URL"
+                        style={{
+                            width: '100%',
+                            padding: '5px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '3px'
+                        }}
+                    />
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                    <label style={{ display: 'block', marginBottom: '5px', color: 'white' }}>Pattern</label>
+                    <select
+                        value={layer.patternId || ''}
+                        onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
+                        style={{
+                            width: '100%',
+                            padding: '5px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '3px'
+                        }}
+                    >
+                        <option value="">No Pattern</option>
+                        {patterns.map(pattern => (
+                            <option key={pattern.id} value={pattern.id}>
+                                {pattern.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
         </div>
     );
@@ -82,8 +103,6 @@ const AddLayerButton = () => {
     const handleAddLayer = () => {
         const newLayer: Layer = {
             id: uuidv4(),
-            type: 'image',
-            name: 'New Layer',
             srcUrl: 'https://picsum.photos/800/600',
             transform: {
                 position: { x: 0, y: 0 },

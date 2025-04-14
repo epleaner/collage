@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { Layer, ImageLayer, VideoLayer } from '../types/layer.types';
-import { usePatternStore } from '../../pattern/store/patternStore';
+import { Layer } from '../types/layer.types';
 
 interface LayerState {
     layers: Layer[];
@@ -11,10 +10,8 @@ interface LayerState {
     setLayerSrcUrl: (layerId: string, srcUrl: string) => void;
 }
 
-const createBaseLayer = (): VideoLayer => ({
+const createBaseLayer = (): Layer => ({
     id: 'base-image',
-    type: 'video',
-    name: 'Base Image',
     srcUrl: 'https://archive.org/download/jojo-no-kimyou-na-bouken-1993-all-episodes-english-dubbed/jojos-bizarre-adventure-dub-episode-2.mp4',
     transform: {
         position: { x: 0, y: 0 },
@@ -30,10 +27,8 @@ const createBaseLayer = (): VideoLayer => ({
     playing: true
 });
 
-const createPatternLayer = (): VideoLayer => ({
+const createPatternLayer = (): Layer => ({
     id: 'pattern-layer',
-    type: 'video',
-    name: 'Pattern Layer',
     srcUrl: 'https://archive.org/download/x-men-marvel-anime-1080p-ai-upscale/X-Men%20Anime/X-Men%20%28Marvel%20ANIME%29%20-%20Episode%2002%20-%20U-Men...Mutant%20Hunting.mp4',
     transform: {
         position: { x: 0, y: 0 },
