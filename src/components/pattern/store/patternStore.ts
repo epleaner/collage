@@ -32,6 +32,7 @@ type PatternStore = {
   updateGlobalTransform: (patternId: string, transform: Partial<Transform>) => void;
   resetTransforms: (patternId: string) => void;
   duplicatePattern: (patternId: string) => void;
+  updatePatternShapeCount: (patternId: string, count: number) => void;
 };
 
 // Default transform values
@@ -215,5 +216,74 @@ export const usePatternStore = create<PatternStore>((set) => ({
         patterns: [...state.patterns, newPattern],
         currentPatternIndex: state.patterns.length
       };
+    }),
+
+  // Update the number of shapes in a pattern
+  updatePatternShapeCount: (patternId, count) =>
+    set((state) => {
+      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      if (patternIndex === -1) return state;
+
+      const newPatterns = [...state.patterns];
+      const pattern = { ...newPatterns[patternIndex] };
+      const currentShapes = [...pattern.shapeMasks];
+      const currentCount = currentShapes.length;
+
+      if (count === currentCount) return state;
+
+      // If we need to add shapes
+      if (count > currentCount) {
+        const shapeType = currentShapes[0]?.type || 'rectangle';
+        const baseShape = currentShapes[0] || {
+          type: 'rectangle' as const,
+          dimensions: { width: 150, height: 200 },
+          position: { x: 20, y: 50 },
+          rotation: 0
+        };
+
+        // Add new shapes based on the first shape
+        for (let i = currentCount; i < count; i++) {
+          const newShape = { ...JSON.parse(JSON.stringify(baseShape)) };
+
+          // Update position for the new shape to create a pattern
+          if (shapeType === 'rectangle' || shapeType === 'triangle') {
+            newShape.position = {
+              x: baseShape.position.x + (i * 15),
+              y: baseShape.position.y
+            };
+          } else if (shapeType === 'circle') {
+            // For circles, arrange in a circular pattern
+            const angle = (i / count) * Math.PI * 2;
+            const radius = 20;
+            newShape.position = {
+              x: baseShape.position.x + Math.cos(angle) * radius,
+              y: baseShape.position.y + Math.sin(angle) * radius
+            };
+          } else if (shapeType === 'custom') {
+            // For custom shapes, just offset them
+            newShape.position = {
+              x: baseShape.position.x + (i * 30),
+              y: baseShape.position.y
+            };
+          }
+
+          // For triangle grid, alternate rotation
+          if (shapeType === 'triangle') {
+            newShape.rotation = (i % 2) * 180;
+          }
+
+          currentShapes.push(newShape);
+        }
+      }
+      // If we need to remove shapes
+      else if (count < currentCount) {
+        // Remove shapes from the end
+        currentShapes.splice(count);
+      }
+
+      pattern.shapeMasks = currentShapes;
+      newPatterns[patternIndex] = pattern;
+
+      return { patterns: newPatterns };
     })
 })); 

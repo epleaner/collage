@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { usePatternStore } from '../store/patternStore';
 
 type TransformControlsProps = {
@@ -10,7 +10,7 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
     patternId,
     onTransformChange,
 }) => {
-    const { patterns, updateGlobalTransform, resetTransforms, duplicatePattern } = usePatternStore();
+    const { patterns, updateGlobalTransform, resetTransforms, duplicatePattern, updatePatternShapeCount } = usePatternStore();
 
     const pattern = patterns.find(p => p.id === patternId);
 
@@ -56,6 +56,12 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
         onTransformChange?.();
     };
 
+    const handleShapeCountChange = (value: number) => {
+        if (!patternId || !pattern) return;
+        updatePatternShapeCount(patternId, value);
+        onTransformChange?.();
+    };
+
     const handleReset = () => {
         if (!patternId) return;
         resetTransforms(patternId);
@@ -67,9 +73,26 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
         duplicatePattern(patternId);
     };
 
+    const shapeCount = pattern?.shapeMasks?.length || 1;
+
     return (
         <div className="space-y-3">
             <div className="space-y-3">
+                {/* Shape Count Control */}
+                <div>
+                    <label className="block text-white mb-1">Shape Count: {shapeCount}</label>
+                    <input
+                        disabled={!patternId}
+                        type="range"
+                        min="1"
+                        max="20"
+                        step="1"
+                        value={shapeCount}
+                        onChange={(e) => handleShapeCountChange(parseInt(e.target.value))}
+                        className="w-full"
+                    />
+                </div>
+
                 <div>
                     <label className="block text-white mb-1">Scale</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -151,21 +174,19 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
                 </div>
 
                 {/* Spacing Control - only show for patterns with multiple shapes */}
-                {pattern?.shapeMasks?.length && pattern.shapeMasks.length > 1 && (
-                    <div>
-                        <label className="block text-white mb-1">Spacing: {globalTransform.spacing.toFixed(2)}</label>
-                        <input
-                            disabled={!patternId}
-                            type="range"
-                            min="-10"
-                            max="20"
-                            step="0.1"
-                            value={globalTransform.spacing}
-                            onChange={(e) => handleSpacingChange(parseFloat(e.target.value))}
-                            className="w-full"
-                        />
-                    </div>
-                )}
+                <div>
+                    <label className="block text-white mb-1">Spacing: {globalTransform.spacing.toFixed(2)}</label>
+                    <input
+                        disabled={!patternId || !(pattern?.shapeMasks?.length && pattern.shapeMasks.length > 1)}
+                        type="range"
+                        min="-10"
+                        max="20"
+                        step="0.1"
+                        value={globalTransform.spacing}
+                        onChange={(e) => handleSpacingChange(parseFloat(e.target.value))}
+                        className="w-full"
+                    />
+                </div>
 
                 {/* Repetition Control */}
                 <div>
