@@ -18,6 +18,7 @@ const Media = ({ layer, style }: MediaProps) => {
     const [initialTime, setInitialTime] = useState(false);
     const [isReversed, setIsReversed] = useState(false);
     const [videoDuration, setVideoDuration] = useState(0);
+    const [playAttempted, setPlayAttempted] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const boundaryCheckRef = useRef<NodeJS.Timeout | null>(null);
     const boundaryCheckingRef = useRef(false); // Use ref instead of state to avoid re-renders
@@ -25,6 +26,20 @@ const Media = ({ layer, style }: MediaProps) => {
     const lastTimeRef = useRef<number>(0); // Track the last time for manual reverse playback
     const mediaType = getMediaType(layer.srcUrl);
     const updateLayer = useLayerStore(state => state.updateLayer);
+
+    // Function to attempt playing the video
+    const attemptPlay = useCallback(async () => {
+        const video = videoRef.current;
+        if (!video || !layer.playing || playAttempted) return;
+
+        try {
+            console.log(`Attempting to play video for layer ${layer.id}`);
+            await video.play();
+            setPlayAttempted(true);
+        } catch (error) {
+            console.error("Error auto-playing video:", error);
+        }
+    }, [layer.id, layer.playing, playAttempted]);
 
     // Memoize the check boundaries function to avoid recreating it on each render
     const checkBoundaries = useCallback(() => {
@@ -132,6 +147,9 @@ const Media = ({ layer, style }: MediaProps) => {
                     if (layer.endTime === undefined) {
                         updateLayer(layer.id, { endTime: video.duration });
                     }
+
+                    // Attempt to play the video if it should be playing
+                    attemptPlay();
                 }
             }
         };
@@ -146,7 +164,7 @@ const Media = ({ layer, style }: MediaProps) => {
         return () => {
             video.removeEventListener('loadedmetadata', handleMetadataLoaded);
         };
-    }, [mediaType, layer.id, layer.startTime, layer.currentTime, layer.endTime, initialTime, updateLayer]);
+    }, [mediaType, layer.id, layer.startTime, layer.currentTime, layer.endTime, initialTime, updateLayer, attemptPlay]);
 
     // Set up boundary checking interval - only run once when video is ready
     useEffect(() => {
@@ -174,6 +192,11 @@ const Media = ({ layer, style }: MediaProps) => {
         };
     }, [mediaType, videoDuration, layer.id, checkBoundaries]);
 
+    // Reset play attempted when src or playing status changes
+    useEffect(() => {
+        setPlayAttempted(false);
+    }, [layer.srcUrl, layer.id]);
+
     // Handle play state changes
     useEffect(() => {
         const video = videoRef.current;
@@ -195,6 +218,7 @@ const Media = ({ layer, style }: MediaProps) => {
                     updateLayer(layer.id, { playing: false });
                 });
             }
+            setPlayAttempted(true);
         } else {
             console.log(`Pausing video for layer ${layer.id}`);
             video.pause();
@@ -280,6 +304,11 @@ const Media = ({ layer, style }: MediaProps) => {
                     loop={false}
                     muted
                     playsInline
+                    onCanPlay={() => {
+                        if (layer.playing && !playAttempted) {
+                            attemptPlay();
+                        }
+                    }}
                     onError={(e) => console.error("Video error:", e)}
                 />
             );

@@ -58,7 +58,7 @@ const createPatternLayer = (): Layer => ({
     visible: true,
     locked: false,
     zIndex: 1,
-    patternId: "row-of-rectangles",
+    patternId: "rectangles",
     patternTransform: { ...defaultPatternTransform },
     currentTime: 200,
     playing: true,

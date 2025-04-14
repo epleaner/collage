@@ -278,7 +278,7 @@ const AddLayerButton = () => {
             visible: true,
             locked: false,
             zIndex: 0,
-            patternId: null,
+            patternId: 'circles',
             startTime: 0,
             playing: true,
             loopMode: 'normal'

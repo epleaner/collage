@@ -45,8 +45,8 @@ const defaultTransform: Transform = {
 };
 
 const createRowOfRectangles = (): Pattern => ({
-  id: 'row-of-rectangles',
-  name: 'Row of Rectangles',
+  id: 'rectangles',
+  name: 'Rectangles',
   shapeMasks: Array.from({ length: 5 }, (_, i) => ({
     type: 'rectangle' as const,
     dimensions: { width: 150, height: 200 },
@@ -57,8 +57,8 @@ const createRowOfRectangles = (): Pattern => ({
 });
 
 const createCenterCircle = (): Pattern => ({
-  id: 'center-circle',
-  name: 'Center Circle',
+  id: 'circles',
+  name: 'Circles',
   shapeMasks: [{
     type: 'circle' as const,
     dimensions: { width: 400, height: 400 },
@@ -88,8 +88,8 @@ const createSquigglyLines = (): Pattern => ({
 });
 
 const createTriangleGrid = (): Pattern => ({
-  id: 'triangle-grid',
-  name: 'Triangle Grid',
+  id: 'triangles',
+  name: 'Triangles',
   shapeMasks: Array.from({ length: 9 }, (_, i) => {
     const row = Math.floor(i / 3);
     const col = i % 3;
