@@ -3,10 +3,10 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { PatternTransformControls } from '../pattern/ui/PatternTransformControls';
 
 interface DraggableLayerItemProps {
@@ -124,6 +124,35 @@ const AddLayerButton = () => {
     );
 };
 
+interface CollapsibleSectionProps {
+    title: string;
+    children: React.ReactNode;
+    defaultExpanded?: boolean;
+}
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
+    title,
+    children,
+    defaultExpanded = true
+}) => {
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+    return (
+        <div className="mb-4">
+            <div
+                className="flex items-center justify-between cursor-pointer mb-2 pb-1"
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                <h3 className="text-white flex items-center gap-2">
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    {title}
+                </h3>
+            </div>
+            {isExpanded && children}
+        </div>
+    );
+};
+
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
     const { layers, reorderLayers, selectedLayerId, setSelectedLayer, setLayerPattern } = useLayerStore();
@@ -174,24 +203,32 @@ const Sidebar = () => {
         <DndProvider backend={HTML5Backend}>
             <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto">
 
-                {selectedPattern && (
-                    <div className="mb-4">
-                        <PatternTransformControls patternId={selectedPattern.id} />
+                <CollapsibleSection title="Keyboard Shortcuts" defaultExpanded={false}>
+                    <div className="bg-white/5 p-2 rounded text-xs">
+                        <div><span className="font-semibold">1-9:</span> Select layer</div>
+                        <div><span className="font-semibold">Q,W,E,R:</span> Apply pattern</div>
+                        <div><span className="font-semibold">T:</span> Remove pattern</div>
                     </div>
-                )}
+                </CollapsibleSection>
 
-                <div>
-                    {layers.map((layer, index) => (
-                        <DraggableLayerItem
-                            key={layer.id}
-                            layer={layer}
-                            index={index}
-                            moveLayer={moveLayer}
-                            isSelected={layer.id === selectedLayerId}
-                        />
-                    ))}
-                </div>
-                <AddLayerButton />
+                <CollapsibleSection title="Pattern Config" defaultExpanded={false}>
+                    <PatternTransformControls patternId={selectedPattern?.id} />
+                </CollapsibleSection>
+
+                <CollapsibleSection title="Layers">
+                    <div>
+                        {layers.map((layer, index) => (
+                            <DraggableLayerItem
+                                key={layer.id}
+                                layer={layer}
+                                index={index}
+                                moveLayer={moveLayer}
+                                isSelected={layer.id === selectedLayerId}
+                            />
+                        ))}
+                    </div>
+                    <AddLayerButton />
+                </CollapsibleSection>
             </div>
         </DndProvider>
     );
