@@ -10,17 +10,19 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
         scale: { x: 1, y: 1 },
         rotation: 0,
         position: { x: 0, y: 0 },
-        spacing: 1
+        spacing: 1,
+        repetitions: 1
     };
 
     // Calculate transformed shapes with global transform applied
-    const transformedShapes = shapeMasks.map((mask, index) => {
+    let transformedShapes = shapeMasks.map((mask, index) => {
         const { type, dimensions, position, rotation, pathData, transform } = mask;
         const individualTransform = transform || {
             scale: { x: 1, y: 1 },
             rotation: 0,
             position: { x: 0, y: 0 },
-            spacing: 1
+            spacing: 1,
+            repetitions: 1
         };
 
         // Apply global transform and individual transform
@@ -48,6 +50,28 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
             pathData
         };
     });
+
+    // Apply repetitions - duplicate shapes with additional offset
+    if (globalTransform.repetitions > 1) {
+        const originalShapes = [...transformedShapes];
+        transformedShapes = [];
+
+        for (let rep = 0; rep < globalTransform.repetitions; rep++) {
+            originalShapes.forEach(shape => {
+                // Create a new shape with adjusted position for each repetition
+                const offsetX = rep * 10; // Offset each repetition by 10% to the right
+                const offsetY = rep * 5;  // Offset each repetition by 5% down
+
+                transformedShapes.push({
+                    ...shape,
+                    position: {
+                        x: shape.position.x + offsetX,
+                        y: shape.position.y + offsetY
+                    }
+                });
+            });
+        }
+    }
 
     return {
         position: 'absolute',

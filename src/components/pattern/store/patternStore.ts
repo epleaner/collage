@@ -6,6 +6,7 @@ export type Transform = {
   rotation: number;
   position: { x: number; y: number };
   spacing: number; // For patterns with multiple shapes
+  repetitions: number; // Number of repetitions of the shape
 };
 
 export type Pattern = {
@@ -39,6 +40,7 @@ const defaultTransform: Transform = {
   rotation: 0,
   position: { x: 0, y: 0 },
   spacing: 1,
+  repetitions: 1,
 };
 
 const createRowOfRectangles = (): Pattern => ({

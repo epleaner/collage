@@ -19,6 +19,7 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
         rotation: 0,
         position: { x: 0, y: 0 },
         spacing: 1,
+        repetitions: 1,
     };
 
     const handleScaleChange = (axis: 'x' | 'y', value: number) => {
@@ -46,6 +47,12 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
     const handleSpacingChange = (value: number) => {
         if (!patternId) return;
         updateGlobalTransform(patternId, { spacing: value });
+        onTransformChange?.();
+    };
+
+    const handleRepetitionsChange = (value: number) => {
+        if (!patternId) return;
+        updateGlobalTransform(patternId, { repetitions: value });
         onTransformChange?.();
     };
 
@@ -159,6 +166,21 @@ export const PatternTransformControls: React.FC<TransformControlsProps> = ({
                         />
                     </div>
                 )}
+
+                {/* Repetition Control */}
+                <div>
+                    <label className="block text-white mb-1">Repetitions: {globalTransform.repetitions || 1}</label>
+                    <input
+                        disabled={!patternId}
+                        type="range"
+                        min="1"
+                        max="10"
+                        step="1"
+                        value={globalTransform.repetitions || 1}
+                        onChange={(e) => handleRepetitionsChange(parseInt(e.target.value))}
+                        className="w-full"
+                    />
+                </div>
 
                 {/* Action Buttons */}
                 <div className="flex space-x-2">
