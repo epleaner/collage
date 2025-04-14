@@ -1,9 +1,13 @@
 import { ShapeType } from '../layer/types/layer.types';
 
+interface ShapeMask {
+    type: ShapeType;
+    dimensions: { width: number; height: number };
+    position: { x: number; y: number };
+    pathData?: string;
+}
+
 export const getShapePathData = (shape: ShapeType, dimensions: { width: number; height: number }, customPathData?: string) => {
-    if (shape === 'custom') {
-        return customPathData;
-    }
     const { width, height } = dimensions;
     switch (shape) {
         case 'circle':
@@ -13,23 +17,25 @@ export const getShapePathData = (shape: ShapeType, dimensions: { width: number; 
             return `M ${width / 2},0 L 0,${height} L ${width},${height} Z`;
         case 'rectangle':
             return `M 0,0 L ${width},0 L ${width},${height} L 0,${height} Z`;
+        case 'custom':
+            return customPathData || '';
         default:
             return '';
     }
 };
 
-export const getMediaStyle = (shapeMasks: any[]): React.CSSProperties => {
+export const getMediaStyle = (shapeMasks: ShapeMask[]): React.CSSProperties => {
     return {
         position: 'absolute',
         width: '100%',
         height: '100%',
         objectFit: 'cover' as const,
         maskImage: shapeMasks.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, (mask as any).pathData);
+            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
             return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
         }).join(', '),
         WebkitMaskImage: shapeMasks.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, (mask as any).pathData);
+            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
             return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
         }).join(', '),
         maskSize: shapeMasks.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
