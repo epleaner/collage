@@ -6,15 +6,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface DraggableLayerItemProps {
     layer: Layer;
     index: number;
     moveLayer: (dragIndex: number, hoverIndex: number) => void;
+    isSelected: boolean;
 }
 
-const DraggableLayerItem = ({ layer, index, moveLayer }: DraggableLayerItemProps) => {
+const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLayerItemProps) => {
     const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer } = useLayerStore();
     const { patterns } = usePatternStore();
 
@@ -28,7 +29,7 @@ const DraggableLayerItem = ({ layer, index, moveLayer }: DraggableLayerItemProps
 
     const [, drop] = useDrop({
         accept: 'LAYER',
-        hover: (item: { index: number }, monitor) => {
+        hover: (item: { index: number }) => {
             if (item.index === index) return;
             moveLayer(item.index, index);
             item.index = index;
@@ -41,7 +42,7 @@ const DraggableLayerItem = ({ layer, index, moveLayer }: DraggableLayerItemProps
     return (
         <div
             ref={ref}
-            className={`p-2.5 mb-2.5 bg-white/10 rounded cursor-move ${isDragging ? 'opacity-50' : ''}`}
+            className={`p-2.5 mb-2.5 bg-white/10 rounded cursor-move ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'border-white/50' : 'border-transparent'} border  transition-colors`}
         >
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2.5">
@@ -117,14 +118,44 @@ const AddLayerButton = () => {
             onClick={handleAddLayer}
             className="w-full mb-5 p-2.5 text-white rounded cursor-pointer hover:border-white/20 border border-transparent transition-colors"
         >
-            Add New Layer
+            Add Layer
         </button>
     );
 };
 
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
-    const { layers, reorderLayers } = useLayerStore();
+    const { layers, reorderLayers, selectedLayerId, setSelectedLayer, setLayerPattern } = useLayerStore();
+
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            // Handle number keys 1-9 for layer selection
+            if (e.key >= '1' && e.key <= '9') {
+                const index = parseInt(e.key) - 1;
+                if (index < layers.length) {
+                    setSelectedLayer(layers[index].id);
+                }
+            }
+
+            // Handle pattern switching for selected layer
+            if (selectedLayerId) {
+                const patternKeys: { [key: string]: string | null } = {
+                    'q': 'row-of-rectangles',
+                    'w': 'center-circle',
+                    'e': 'squiggly-lines',
+                    'r': 'triangle-grid',
+                    't': null, // No pattern
+                };
+
+                if (patternKeys[e.key] !== undefined) {
+                    setLayerPattern(selectedLayerId, patternKeys[e.key]);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [layers, selectedLayerId, setSelectedLayer, setLayerPattern]);
 
     if (!isSidebarVisible) return null;
 
@@ -142,6 +173,7 @@ const Sidebar = () => {
                             layer={layer}
                             index={index}
                             moveLayer={moveLayer}
+                            isSelected={layer.id === selectedLayerId}
                         />
                     ))}
                 </div>

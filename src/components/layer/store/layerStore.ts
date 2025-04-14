@@ -3,12 +3,14 @@ import { Layer } from '../types/layer.types';
 
 interface LayerState {
     layers: Layer[];
+    selectedLayerId: string | null;
     addLayer: (layer: Layer) => void;
     removeLayer: (layerId: string) => void;
     updateLayer: (layerId: string, updates: Partial<Layer>) => void;
     setLayerPattern: (layerId: string, patternId: string | null) => void;
     setLayerSrcUrl: (layerId: string, srcUrl: string) => void;
     reorderLayers: (startIndex: number, endIndex: number) => void;
+    setSelectedLayer: (layerId: string | null) => void;
 }
 
 const createBaseLayer = (): Layer => ({
@@ -47,6 +49,7 @@ const createPatternLayer = (): Layer => ({
 
 export const useLayerStore = create<LayerState>((set, get) => ({
     layers: [createBaseLayer(), createPatternLayer()],
+    selectedLayerId: null,
     addLayer: (layer) => set((state) => ({ layers: [...state.layers, layer] })),
     removeLayer: (layerId) => set((state) => ({
         layers: state.layers.filter(layer => layer.id !== layerId)
@@ -84,5 +87,6 @@ export const useLayerStore = create<LayerState>((set, get) => ({
             result.splice(endIndex, 0, removed);
             return { layers: result };
         });
-    }
+    },
+    setSelectedLayer: (layerId) => set({ selectedLayerId: layerId })
 })); 
