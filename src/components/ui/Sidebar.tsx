@@ -3,28 +3,61 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useRef } from 'react';
 
-const LayerItem = ({ layer }: { layer: Layer }) => {
+interface DraggableLayerItemProps {
+    layer: Layer;
+    index: number;
+    moveLayer: (dragIndex: number, hoverIndex: number) => void;
+}
+
+const DraggableLayerItem = ({ layer, index, moveLayer }: DraggableLayerItemProps) => {
     const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer } = useLayerStore();
     const { patterns } = usePatternStore();
 
+    const [{ isDragging }, drag] = useDrag({
+        type: 'LAYER',
+        item: { index },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+
+    const [, drop] = useDrop({
+        accept: 'LAYER',
+        hover: (item: { index: number }, monitor) => {
+            if (item.index === index) return;
+            moveLayer(item.index, index);
+            item.index = index;
+        },
+    });
+
+    const ref = useRef<HTMLDivElement>(null);
+    drag(drop(ref));
+
     return (
-        <div className="p-2.5 mb-2.5 bg-white/10 rounded">
+        <div
+            ref={ref}
+            className={`p-2.5 mb-2.5 bg-white/10 rounded cursor-move ${isDragging ? 'opacity-50' : ''}`}
+        >
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2.5">
+                    <GripVertical size={12} className="text-white/50" />
                     <button
                         onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
                         className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                     >
-                        {layer.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+                        {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
                     </button>
                 </div>
                 <button
                     onClick={() => removeLayer(layer.id)}
                     className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={12} />
                 </button>
             </div>
             <div className="mt-2.5">
@@ -91,21 +124,30 @@ const AddLayerButton = () => {
 
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
-    const { layers } = useLayerStore();
+    const { layers, reorderLayers } = useLayerStore();
 
     if (!isSidebarVisible) return null;
 
+    const moveLayer = (dragIndex: number, hoverIndex: number) => {
+        reorderLayers(dragIndex, hoverIndex);
+    };
+
     return (
-        <div
-            className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto"
-        >
-            <div>
-                {layers.map(layer => (
-                    <LayerItem key={layer.id} layer={layer} />
-                ))}
+        <DndProvider backend={HTML5Backend}>
+            <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto">
+                <div>
+                    {layers.map((layer, index) => (
+                        <DraggableLayerItem
+                            key={layer.id}
+                            layer={layer}
+                            index={index}
+                            moveLayer={moveLayer}
+                        />
+                    ))}
+                </div>
+                <AddLayerButton />
             </div>
-            <AddLayerButton />
-        </div>
+        </DndProvider>
     );
 };
 

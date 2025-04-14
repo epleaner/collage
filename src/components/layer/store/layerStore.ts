@@ -8,6 +8,7 @@ interface LayerState {
     updateLayer: (layerId: string, updates: Partial<Layer>) => void;
     setLayerPattern: (layerId: string, patternId: string | null) => void;
     setLayerSrcUrl: (layerId: string, srcUrl: string) => void;
+    reorderLayers: (startIndex: number, endIndex: number) => void;
 }
 
 const createBaseLayer = (): Layer => ({
@@ -75,5 +76,13 @@ export const useLayerStore = create<LayerState>((set, get) => ({
                     : layer
             )
         }));
+    },
+    reorderLayers: (startIndex, endIndex) => {
+        set((state) => {
+            const result = Array.from(state.layers);
+            const [removed] = result.splice(startIndex, 1);
+            result.splice(endIndex, 0, removed);
+            return { layers: result };
+        });
     }
 })); 
