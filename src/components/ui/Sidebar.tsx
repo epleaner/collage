@@ -5,7 +5,7 @@ import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
 
 const LayerItem = ({ layer }: { layer: Layer }) => {
-    const { removeLayer, setLayerPattern } = useLayerStore();
+    const { removeLayer, setLayerPattern, setLayerSrcUrl } = useLayerStore();
     const { patterns } = usePatternStore();
 
     return (
@@ -37,6 +37,21 @@ const LayerItem = ({ layer }: { layer: Layer }) => {
                 </button>
             </div>
             <div style={{ marginTop: '10px' }}>
+                <input
+                    type="text"
+                    value={layer.srcUrl}
+                    onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
+                    placeholder="Enter media URL"
+                    style={{
+                        width: '100%',
+                        padding: '5px',
+                        marginBottom: '10px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '3px'
+                    }}
+                />
                 <select
                     value={layer.patternId || ''}
                     onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
@@ -69,7 +84,7 @@ const AddLayerButton = () => {
             id: uuidv4(),
             type: 'image',
             name: 'New Layer',
-            src: '/media/animal.jpg',
+            srcUrl: 'https://picsum.photos/800/600',
             transform: {
                 position: { x: 0, y: 0 },
                 scale: 1,
@@ -79,7 +94,7 @@ const AddLayerButton = () => {
             visible: true,
             locked: false,
             zIndex: 0,
-            patternId: null,
+            patternId: null
         };
         addLayer(newLayer);
     };

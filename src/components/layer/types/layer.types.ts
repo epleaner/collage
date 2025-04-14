@@ -1,5 +1,3 @@
-import { Pattern } from '../../pattern/store/patternStore';
-
 export type LayerType = 'image' | 'gif' | 'video';
 
 export interface Position {
@@ -38,24 +36,21 @@ export interface BaseLayer {
   locked: boolean;
   zIndex: number;
   patternId: string | null;
+  srcUrl: string;
 }
 
 export interface ImageLayer extends BaseLayer {
   type: 'image';
-  src: string;
 }
 
 export interface GifLayer extends BaseLayer {
   type: 'gif';
-  src: string;
   frameRate?: number;
 }
 
 export interface VideoLayer extends BaseLayer {
   type: 'video';
-  src: string;
-  currentTime: number;
-  duration: number;
+  currentTime?: number;
   playing: boolean;
 }
 

@@ -1,12 +1,5 @@
 import { ShapeType } from '../layer/types/layer.types';
 
-interface ShapeMask {
-    type: ShapeType;
-    dimensions: { width: number; height: number };
-    position: { x: number; y: number };
-    pathData?: string;
-}
-
 export const getShapePathData = (shape: ShapeType, dimensions: { width: number; height: number }, customPathData?: string) => {
     const { width, height } = dimensions;
     switch (shape) {
