@@ -68,6 +68,14 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [ ] Layer transformation controls
   - [ ] Layer visibility controls
   - [ ] Layer grouping system
+  - [ ] Layer-specific pattern targeting
+  - [ ] Interactive layer sidebar
+    - [ ] Layer list with drag-and-drop reordering
+    - [ ] Add/remove layer controls
+    - [ ] Layer media selection interface
+    - [ ] Layer pattern assignment
+    - [ ] Layer visibility toggles
+    - [ ] Layer transformation controls
 
 - [ ] Pattern Management UI
   - [ ] Pattern library interface
@@ -75,6 +83,26 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [ ] Pattern parameter controls
   - [ ] Pattern preview system
   - [ ] Pattern export/import interface
+  - [ ] Pattern preview in sidebar
+    - [ ] Live pattern preview for selected layer
+    - [ ] Pattern thumbnail generation
+    - [ ] Pattern animation preview
+    - [ ] Pattern parameter visualization
+
+- [ ] Pattern Parameter System
+  - [ ] Dynamic parameter controls
+    - [ ] Customizable parameter slots (p1, p2, p3, etc.)
+    - [ ] Parameter type selection (number, function, etc.)
+    - [ ] Built-in function library (sin, cos, etc.)
+    - [ ] Custom function input
+    - [ ] Parameter animation controls
+    - [ ] Parameter linking between layers
+  - [ ] Parameter UI Components
+    - [ ] Parameter sliders and inputs
+    - [ ] Function selector interface
+    - [ ] Parameter animation timeline
+    - [ ] Parameter value visualization
+    - [ ] Parameter presets system
 
 - [ ] MIDI Control UI
   - [ ] MIDI device selection

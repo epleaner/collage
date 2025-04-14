@@ -24,27 +24,3 @@ export const getShapePathData = (shape: ShapeType, dimensions: { width: number; 
     }
 };
 
-export const getMediaStyle = (shapeMasks: ShapeMask[]): React.CSSProperties => {
-    return {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover' as const,
-        maskImage: shapeMasks.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
-            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
-        }).join(', '),
-        WebkitMaskImage: shapeMasks.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
-            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path d='${pathData}' fill='black'/></svg>")`;
-        }).join(', '),
-        maskSize: shapeMasks.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
-        WebkitMaskSize: shapeMasks.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
-        maskPosition: shapeMasks.map(mask => `${mask.position.x}% ${mask.position.y}%`).join(', '),
-        WebkitMaskPosition: shapeMasks.map(mask => `${mask.position.x}% ${mask.position.y}%`).join(', '),
-        maskRepeat: 'no-repeat',
-        WebkitMaskRepeat: 'no-repeat',
-        maskComposite: 'add',
-        WebkitMaskComposite: 'add'
-    };
-}; 

@@ -1,3 +1,5 @@
+import { Pattern } from '../../pattern/store/patternStore';
+
 export type LayerType = 'image' | 'gif' | 'video';
 
 export interface Position {
@@ -24,6 +26,7 @@ export interface ShapeMask {
   dimensions: Dimensions;
   position: Position;
   rotation: number;
+  pathData?: string;
 }
 
 export interface BaseLayer {
@@ -34,7 +37,7 @@ export interface BaseLayer {
   visible: boolean;
   locked: boolean;
   zIndex: number;
-  shapeMasks: ShapeMask[];
+  patternId: string | null;
 }
 
 export interface ImageLayer extends BaseLayer {
@@ -45,7 +48,7 @@ export interface ImageLayer extends BaseLayer {
 export interface GifLayer extends BaseLayer {
   type: 'gif';
   src: string;
-  frameRate: number;
+  frameRate?: number;
 }
 
 export interface VideoLayer extends BaseLayer {
