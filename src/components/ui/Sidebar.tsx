@@ -7,7 +7,7 @@ import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pau
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect, useState } from 'react';
-import { PatternTransformControls } from '../pattern/ui/PatternTransformControls';
+import { LayerPatternTransformControls } from '../pattern/ui/LayerPatternTransformControls';
 
 interface DraggableLayerItemProps {
     layer: Layer;
@@ -20,6 +20,7 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
     const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer, setLayerTimeRange, setLayerLoopMode } = useLayerStore();
     const { patterns } = usePatternStore();
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isPatternExpanded, setIsPatternExpanded] = useState(false);
     const [videoDuration, setVideoDuration] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const layerRef = useRef<HTMLDivElement>(null);
@@ -192,6 +193,24 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                         </select>
                     </div>
 
+                    {layer.patternId && (
+                        <div className="mb-3 bg-white/5 p-2 rounded">
+                            <div
+                                className="flex justify-between items-center cursor-pointer"
+                                onClick={() => setIsPatternExpanded(!isPatternExpanded)}
+                            >
+                                <span className="text-white text-xs">Pattern Settings</span>
+                                {isPatternExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                            </div>
+
+                            {isPatternExpanded && (
+                                <div className="mt-2">
+                                    <LayerPatternTransformControls layerId={layer.id} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {videoDuration !== null && (
                         <>
                             <div className="mb-2.5">
@@ -308,13 +327,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
-    const { layers, reorderLayers, selectedLayerId, setSelectedLayer, setLayerPattern } = useLayerStore();
-    const { patterns } = usePatternStore();
-
-    // Get the selected layer and its pattern
-    const selectedLayer = layers.find(layer => layer.id === selectedLayerId);
-    const selectedPattern = selectedLayer?.patternId ?
-        patterns.find(p => p.id === selectedLayer.patternId) : null;
+    const { layers, reorderLayers, selectedLayerId, setSelectedLayer } = useLayerStore();
 
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
@@ -325,26 +338,11 @@ const Sidebar = () => {
                     setSelectedLayer(layers[index].id);
                 }
             }
-
-            // Handle pattern switching for selected layer
-            if (selectedLayerId) {
-                const patternKeys: { [key: string]: string | null } = {
-                    'q': 'row-of-rectangles',
-                    'w': 'center-circle',
-                    'e': 'squiggly-lines',
-                    'r': 'triangle-grid',
-                    't': null, // No pattern
-                };
-
-                if (patternKeys[e.key] !== undefined) {
-                    setLayerPattern(selectedLayerId, patternKeys[e.key]);
-                }
-            }
         };
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [layers, selectedLayerId, setSelectedLayer, setLayerPattern]);
+    }, [layers, setSelectedLayer]);
 
     if (!isSidebarVisible) return null;
 
@@ -359,13 +357,7 @@ const Sidebar = () => {
                 <CollapsibleSection title="Keyboard Shortcuts" defaultExpanded={false}>
                     <div className="bg-white/5 p-2 rounded text-xs">
                         <div><span className="font-semibold">1-9:</span> Select layer</div>
-                        <div><span className="font-semibold">Q,W,E,R:</span> Apply pattern</div>
-                        <div><span className="font-semibold">T:</span> Remove pattern</div>
                     </div>
-                </CollapsibleSection>
-
-                <CollapsibleSection title="Pattern Config" defaultExpanded={false}>
-                    <PatternTransformControls patternId={selectedPattern?.id} />
                 </CollapsibleSection>
 
                 <CollapsibleSection title="Layers">

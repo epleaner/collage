@@ -5,8 +5,19 @@ import { getShapePathData } from "../utils";
 export const useMediaStyle = (layer: Layer): React.CSSProperties => {
     const { patterns } = usePatternStore();
     const pattern = patterns.find(p => p.id === layer.patternId);
-    const shapeMasks = pattern?.shapeMasks || [];
-    const globalTransform = pattern?.globalTransform || {
+
+    // If no pattern is selected, return empty style
+    if (!pattern) {
+        return {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover' as const
+        };
+    }
+
+    // Use the layer-specific pattern transform if available, otherwise fall back to global transform
+    const patternTransform = layer.patternTransform || pattern.globalTransform || {
         scale: { x: 1, y: 1 },
         rotation: 0,
         position: { x: 0, y: 0 },
@@ -14,7 +25,12 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
         repetitions: 1
     };
 
-    // Calculate transformed shapes with global transform applied
+    // Determine the number of shapes to use - from layer settings or pattern definition
+    const shapeCount = layer.patternTransform?.shapeCount || pattern.shapeMasks.length;
+    // Get the original shapes or a subset of them based on shapeCount
+    const shapeMasks = pattern.shapeMasks.slice(0, shapeCount);
+
+    // Calculate transformed shapes with pattern transform applied
     let transformedShapes = shapeMasks.map((mask, index) => {
         const { type, dimensions, position, rotation, pathData, transform } = mask;
         const individualTransform = transform || {
@@ -25,22 +41,22 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
             repetitions: 1
         };
 
-        // Apply global transform and individual transform
-        const scaledWidth = dimensions.width * globalTransform.scale.x * individualTransform.scale.x;
-        const scaledHeight = dimensions.height * globalTransform.scale.y * individualTransform.scale.y;
+        // Apply pattern transform and individual transform
+        const scaledWidth = dimensions.width * patternTransform.scale.x * individualTransform.scale.x;
+        const scaledHeight = dimensions.height * patternTransform.scale.y * individualTransform.scale.y;
 
         // Apply spacing for multi-shape patterns
         const spacingOffset = shapeMasks.length > 1 ?
-            index * globalTransform.spacing * individualTransform.spacing : 0;
+            index * patternTransform.spacing * individualTransform.spacing : 0;
 
         // Calculate final position with transforms
         const finalPosition = {
-            x: position.x + globalTransform.position.x + individualTransform.position.x + spacingOffset,
-            y: position.y + globalTransform.position.y + individualTransform.position.y
+            x: position.x + patternTransform.position.x + individualTransform.position.x + spacingOffset,
+            y: position.y + patternTransform.position.y + individualTransform.position.y
         };
 
         // Calculate final rotation
-        const finalRotation = rotation + globalTransform.rotation + individualTransform.rotation;
+        const finalRotation = rotation + patternTransform.rotation + individualTransform.rotation;
 
         return {
             type,
@@ -52,11 +68,11 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
     });
 
     // Apply repetitions - duplicate shapes with additional offset
-    if (globalTransform.repetitions > 1) {
+    if (patternTransform.repetitions > 1) {
         const originalShapes = [...transformedShapes];
         transformedShapes = [];
 
-        for (let rep = 0; rep < globalTransform.repetitions; rep++) {
+        for (let rep = 0; rep < patternTransform.repetitions; rep++) {
             originalShapes.forEach(shape => {
                 // Create a new shape with adjusted position for each repetition
                 const offsetX = rep * 10; // Offset each repetition by 10% to the right

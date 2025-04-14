@@ -25,6 +25,16 @@ export interface ShapeMask {
   pathData?: string;
 }
 
+// Pattern transform for per-layer pattern configuration
+export interface PatternTransform {
+  scale: { x: number; y: number };
+  rotation: number;
+  position: { x: number; y: number };
+  spacing: number;
+  repetitions: number;
+  shapeCount?: number;
+}
+
 export interface Layer {
   id: string;
   transform: Transform;
@@ -32,6 +42,7 @@ export interface Layer {
   locked: boolean;
   zIndex: number;
   patternId: string | null;
+  patternTransform?: PatternTransform; // Per-layer pattern configuration
   srcUrl: string;
   currentTime?: number;
   playing?: boolean;

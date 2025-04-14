@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Layer } from '../types/layer.types';
+import { Layer, PatternTransform } from '../types/layer.types';
 
 interface LayerState {
     layers: Layer[];
@@ -11,9 +11,20 @@ interface LayerState {
     setLayerSrcUrl: (layerId: string, srcUrl: string) => void;
     setLayerTimeRange: (layerId: string, startTime: number, endTime: number) => void;
     setLayerLoopMode: (layerId: string, loopMode: 'normal' | 'forward-backward') => void;
+    updateLayerPatternTransform: (layerId: string, patternTransform: Partial<PatternTransform>) => void;
     reorderLayers: (startIndex: number, endIndex: number) => void;
     setSelectedLayer: (layerId: string | null) => void;
 }
+
+// Default pattern transform values
+const defaultPatternTransform: PatternTransform = {
+    scale: { x: 1, y: 1 },
+    rotation: 0,
+    position: { x: 0, y: 0 },
+    spacing: 1,
+    repetitions: 1,
+    shapeCount: 5 // Default shape count
+};
 
 const createBaseLayer = (): Layer => ({
     id: 'base-image',
@@ -48,6 +59,7 @@ const createPatternLayer = (): Layer => ({
     locked: false,
     zIndex: 1,
     patternId: "row-of-rectangles",
+    patternTransform: { ...defaultPatternTransform },
     currentTime: 200,
     playing: true,
     startTime: 0,
@@ -74,6 +86,8 @@ export const useLayerStore = create<LayerState>((set, get) => ({
                     ? {
                         ...layer,
                         patternId,
+                        // Initialize pattern transform when setting a pattern
+                        patternTransform: patternId ? { ...defaultPatternTransform } : undefined
                     } as Layer
                     : layer
             )
@@ -104,6 +118,30 @@ export const useLayerStore = create<LayerState>((set, get) => ({
                     ? { ...layer, loopMode } as Layer
                     : layer
             )
+        }));
+    },
+    updateLayerPatternTransform: (layerId, patternTransform) => {
+        set((state) => ({
+            layers: state.layers.map(layer => {
+                if (layer.id !== layerId) return layer;
+
+                const currentTransform = layer.patternTransform || { ...defaultPatternTransform };
+                return {
+                    ...layer,
+                    patternTransform: {
+                        ...currentTransform,
+                        ...patternTransform,
+                        scale: {
+                            ...currentTransform.scale,
+                            ...(patternTransform.scale || {})
+                        },
+                        position: {
+                            ...currentTransform.position,
+                            ...(patternTransform.position || {})
+                        }
+                    }
+                } as Layer;
+            })
         }));
     },
     reorderLayers: (startIndex, endIndex) => {
