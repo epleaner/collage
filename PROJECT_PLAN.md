@@ -24,9 +24,9 @@ An interactive audio-visual collage tool that allows users to create complex lay
 
 ### Phase 2: Advanced Layer Features
 - [ ] Shape-Based Layer Support
-  - [ ] Rectangle shape support
-  - [ ] Circle shape support
-  - [ ] Triangle shape support
+  - [x] Rectangle shape support
+  - [x] Circle shape support
+  - [x] Triangle shape support
   - [ ] Custom shape drawing tools
   - [ ] Shape combination operations
   - [ ] Shape pattern generation

@@ -9,6 +9,8 @@ interface LayerState {
     updateLayer: (layerId: string, updates: Partial<Layer>) => void;
     setLayerPattern: (layerId: string, patternId: string | null) => void;
     setLayerSrcUrl: (layerId: string, srcUrl: string) => void;
+    setLayerTimeRange: (layerId: string, startTime: number, endTime: number) => void;
+    setLayerLoopMode: (layerId: string, loopMode: 'normal' | 'forward-backward') => void;
     reorderLayers: (startIndex: number, endIndex: number) => void;
     setSelectedLayer: (layerId: string | null) => void;
 }
@@ -27,7 +29,10 @@ const createBaseLayer = (): Layer => ({
     zIndex: 0,
     patternId: null,
     currentTime: 10,
-    playing: true
+    playing: true,
+    startTime: 0,
+    endTime: undefined,  // Will be set to video duration when loaded
+    loopMode: 'normal'
 });
 
 const createPatternLayer = (): Layer => ({
@@ -44,7 +49,10 @@ const createPatternLayer = (): Layer => ({
     zIndex: 1,
     patternId: "row-of-rectangles",
     currentTime: 200,
-    playing: true
+    playing: true,
+    startTime: 0,
+    endTime: undefined, // Will be set to video duration when loaded
+    loopMode: 'normal'
 });
 
 export const useLayerStore = create<LayerState>((set, get) => ({
@@ -76,6 +84,24 @@ export const useLayerStore = create<LayerState>((set, get) => ({
             layers: state.layers.map(layer =>
                 layer.id === layerId
                     ? { ...layer, srcUrl } as Layer
+                    : layer
+            )
+        }));
+    },
+    setLayerTimeRange: (layerId, startTime, endTime) => {
+        set((state) => ({
+            layers: state.layers.map(layer =>
+                layer.id === layerId
+                    ? { ...layer, startTime, endTime } as Layer
+                    : layer
+            )
+        }));
+    },
+    setLayerLoopMode: (layerId, loopMode) => {
+        set((state) => ({
+            layers: state.layers.map(layer =>
+                layer.id === layerId
+                    ? { ...layer, loopMode } as Layer
                     : layer
             )
         }));

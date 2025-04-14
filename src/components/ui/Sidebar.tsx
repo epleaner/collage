@@ -3,7 +3,7 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pause } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect, useState } from 'react';
@@ -17,9 +17,50 @@ interface DraggableLayerItemProps {
 }
 
 const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLayerItemProps) => {
-    const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer } = useLayerStore();
+    const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer, setLayerTimeRange, setLayerLoopMode } = useLayerStore();
     const { patterns } = usePatternStore();
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [videoDuration, setVideoDuration] = useState<number | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const layerRef = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
 
+    // Create a hidden video element to get the duration
+    useEffect(() => {
+        if (!layer.srcUrl) return;
+
+        const video = document.createElement('video');
+        video.style.display = 'none';
+        video.src = layer.srcUrl;
+
+        const handleMetadataLoaded = () => {
+            if (video.duration && !isNaN(video.duration)) {
+                setVideoDuration(video.duration);
+
+                // If endTime is not set, initialize it to the video duration
+                if (layer.endTime === undefined) {
+                    updateLayer(layer.id, { endTime: video.duration });
+                }
+            }
+        };
+
+        video.addEventListener('loadedmetadata', handleMetadataLoaded);
+        document.body.appendChild(video);
+        videoRef.current = video;
+
+        // If metadata is already loaded, call the handler immediately
+        if (video.readyState >= 1) {
+            handleMetadataLoaded();
+        }
+
+        return () => {
+            video.removeEventListener('loadedmetadata', handleMetadataLoaded);
+            document.body.removeChild(video);
+            videoRef.current = null;
+        };
+    }, [layer.srcUrl, layer.id, layer.endTime, updateLayer]);
+
+    // Drag only from the handle
     const [{ isDragging }, drag] = useDrag({
         type: 'LAYER',
         item: { index },
@@ -28,67 +69,176 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
         }),
     });
 
+    // Apply the drag ref to the grip handle only
+    drag(handleRef);
+
     const [, drop] = useDrop({
         accept: 'LAYER',
-        hover: (item: { index: number }) => {
+        hover: (item: { index: number }, monitor) => {
+            if (!layerRef.current) {
+                return;
+            }
+
             if (item.index === index) return;
             moveLayer(item.index, index);
             item.index = index;
         },
     });
 
-    const ref = useRef<HTMLDivElement>(null);
-    drag(drop(ref));
+    // Apply the drop ref to the whole component
+    drop(layerRef);
+
+    const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newStartTime = parseFloat(e.target.value);
+        const currentEndTime = layer.endTime ?? (videoDuration || 0);
+
+        if (newStartTime < currentEndTime) {
+            setLayerTimeRange(layer.id, newStartTime, currentEndTime);
+        }
+    };
+
+    const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newEndTime = parseFloat(e.target.value);
+        const currentStartTime = layer.startTime ?? 0;
+
+        if (newEndTime > currentStartTime && videoDuration !== null) {
+            setLayerTimeRange(layer.id, currentStartTime, Math.min(newEndTime, videoDuration));
+        }
+    };
+
+    const handleLoopModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newLoopMode = e.target.value as 'normal' | 'forward-backward';
+        setLayerLoopMode(layer.id, newLoopMode);
+    };
+
+    const togglePlayPause = () => {
+        updateLayer(layer.id, { playing: !layer.playing });
+    };
+
+    // Format time in seconds to mm:ss format
+    const formatTime = (seconds: number | undefined): string => {
+        if (seconds === undefined) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
     return (
         <div
-            ref={ref}
-            className={`p-2.5 mb-2.5 bg-white/10 rounded cursor-move ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'border-white/50' : 'border-transparent'} border  transition-colors`}
+            ref={layerRef}
+            className={`p-2.5 mb-2.5 bg-white/10 rounded ${isDragging ? 'opacity-50' : ''} ${isSelected ? 'border-white/50' : 'border-transparent'} border transition-colors`}
         >
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2.5">
-                    <GripVertical size={12} className="text-white/50" />
+                    <div
+                        ref={handleRef}
+                        className="cursor-move p-1 hover:bg-white/10 rounded transition-colors"
+                    >
+                        <GripVertical size={12} className="text-white/50" />
+                    </div>
                     <button
                         onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
                         className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                     >
                         {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
                     </button>
-                </div>
-                <button
-                    onClick={() => removeLayer(layer.id)}
-                    className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
-                >
-                    <Trash2 size={12} />
-                </button>
-            </div>
-            <div className="mt-2.5">
-                <div className="mb-2.5">
-                    <label className="block mb-1.5 text-white">Source URL</label>
-                    <input
-                        type="text"
-                        value={layer.srcUrl}
-                        onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
-                        placeholder="Enter media URL"
-                        className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
-                    />
-                </div>
-                <div className="mb-2.5">
-                    <label className="block mb-1.5 text-white">Pattern</label>
-                    <select
-                        value={layer.patternId || ''}
-                        onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
-                        className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                    <button
+                        onClick={togglePlayPause}
+                        className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                     >
-                        <option value="">No Pattern</option>
-                        {patterns.map(pattern => (
-                            <option key={pattern.id} value={pattern.id}>
-                                {pattern.name}
-                            </option>
-                        ))}
-                    </select>
+                        {layer.playing ? <Pause size={12} /> : <Play size={12} />}
+                    </button>
+                </div>
+                <div className="flex items-center">
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors mr-1"
+                    >
+                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </button>
+                    <button
+                        onClick={() => removeLayer(layer.id)}
+                        className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
+                    >
+                        <Trash2 size={12} />
+                    </button>
                 </div>
             </div>
+            {isExpanded && (
+                <div className="mt-2.5">
+                    <div className="mb-2.5">
+                        <label className="block mb-1.5 text-white">Source URL</label>
+                        <input
+                            type="text"
+                            value={layer.srcUrl}
+                            onChange={(e) => setLayerSrcUrl(layer.id, e.target.value)}
+                            placeholder="Enter media URL"
+                            className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                        />
+                    </div>
+                    <div className="mb-2.5">
+                        <label className="block mb-1.5 text-white">Pattern</label>
+                        <select
+                            value={layer.patternId || ''}
+                            onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
+                            className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                        >
+                            <option value="">No Pattern</option>
+                            {patterns.map(pattern => (
+                                <option key={pattern.id} value={pattern.id}>
+                                    {pattern.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {videoDuration !== null && (
+                        <>
+                            <div className="mb-2.5">
+                                <label className="block mb-1.5 text-white">Video Loop Mode</label>
+                                <select
+                                    value={layer.loopMode || 'normal'}
+                                    onChange={handleLoopModeChange}
+                                    className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                                >
+                                    <option value="normal">Normal Loop</option>
+                                    <option value="forward-backward">Forward-Backward</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-2.5">
+                                <label className="block mb-1.5 text-white">
+                                    Start Time: {formatTime(layer.startTime)} / {formatTime(videoDuration)}
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={videoDuration}
+                                    step="0.1"
+                                    value={layer.startTime || 0}
+                                    onChange={handleStartTimeChange}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="mb-2.5">
+                                <label className="block mb-1.5 text-white">
+                                    End Time: {formatTime(layer.endTime)} / {formatTime(videoDuration)}
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={videoDuration}
+                                    step="0.1"
+                                    value={layer.endTime || videoDuration}
+                                    onChange={handleEndTimeChange}
+                                    className="w-full"
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -109,7 +259,10 @@ const AddLayerButton = () => {
             visible: true,
             locked: false,
             zIndex: 0,
-            patternId: null
+            patternId: null,
+            startTime: 0,
+            playing: true,
+            loopMode: 'normal'
         };
         addLayer(newLayer);
     };

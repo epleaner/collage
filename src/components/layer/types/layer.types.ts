@@ -1,4 +1,3 @@
-
 export interface Position {
   x: number;
   y: number;
@@ -37,8 +36,10 @@ export interface Layer {
   currentTime?: number;
   playing?: boolean;
   frameRate?: number;
+  startTime?: number; // In seconds
+  endTime?: number; // In seconds
+  loopMode?: 'normal' | 'forward-backward'; // Loop mode: normal (default) or forward-backward
 }
-
 
 export interface LayerState {
   layers: Layer[];
