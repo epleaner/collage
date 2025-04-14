@@ -32,9 +32,9 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [ ] Shape pattern generation
 
 - [ ] Pattern System
-  - [ ] Pattern definition system
-  - [ ] Pattern application to layers
-  - [ ] Pattern modification tools
+  - [x] Pattern definition system
+  - [x] Pattern application to layers
+  - [x] Pattern modification tools
   - [ ] Pattern presets
   - [ ] Pattern animation system
 

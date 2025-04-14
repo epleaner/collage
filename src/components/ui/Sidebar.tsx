@@ -7,6 +7,7 @@ import { Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect } from 'react';
+import { PatternTransformControls } from '../pattern/ui/PatternTransformControls';
 
 interface DraggableLayerItemProps {
     layer: Layer;
@@ -126,6 +127,12 @@ const AddLayerButton = () => {
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
     const { layers, reorderLayers, selectedLayerId, setSelectedLayer, setLayerPattern } = useLayerStore();
+    const { patterns } = usePatternStore();
+
+    // Get the selected layer and its pattern
+    const selectedLayer = layers.find(layer => layer.id === selectedLayerId);
+    const selectedPattern = selectedLayer?.patternId ?
+        patterns.find(p => p.id === selectedLayer.patternId) : null;
 
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
@@ -166,6 +173,13 @@ const Sidebar = () => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto">
+
+                {selectedPattern && (
+                    <div className="mb-4">
+                        <PatternTransformControls patternId={selectedPattern.id} />
+                    </div>
+                )}
+
                 <div>
                     {layers.map((layer, index) => (
                         <DraggableLayerItem
