@@ -38,6 +38,20 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [ ] Pattern presets
   - [ ] Pattern animation system
 
+- [ ] Advanced Video Control
+  - [ ] Time offset management
+    - [ ] Multiple instances of same video with different offsets
+    - [ ] Synchronized offset control
+    - [ ] Relative offset scheduling
+  - [ ] Playback speed control
+    - [ ] Per-video playback rate adjustment
+    - [ ] Animation curves for speed changes
+    - [ ] MIDI-controlled speed adjustment
+  - [ ] Video sampling and manipulation
+    - [ ] Frame extraction and processing
+    - [ ] Time slicing effects
+    - [ ] Video looping configuration
+
 ### Phase 3: Procedural Generation
 - [ ] Procedural Pattern Generation
   - [ ] Random pattern generation
@@ -52,6 +66,20 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [ ] Hydra layer effects
   - [ ] Hydra parameter controls
   - [ ] Hydra pattern presets
+
+- [ ] Pattern Scripting System
+  - [ ] Script-based pattern generation
+    - [ ] Custom JavaScript pattern scripts
+    - [ ] Script editor with syntax highlighting
+    - [ ] Parameter binding to script variables
+  - [ ] Script scheduling and sequencing
+    - [ ] Time-based script execution
+    - [ ] Event-triggered script execution
+    - [ ] Script chaining and dependencies
+  - [ ] Script library and management
+    - [ ] Script import/export
+    - [ ] Script versioning
+    - [ ] Script sharing system
 
 ### Phase 4: MIDI Integration
 - [ ] MIDI Control System
@@ -76,6 +104,21 @@ An interactive audio-visual collage tool that allows users to create complex lay
     - [ ] Layer pattern assignment
     - [ ] Layer visibility toggles
     - [ ] Layer transformation controls
+    - [ ] Detachable sidebar window support
+      - [ ] Pop-out functionality for secondary monitors
+      - [ ] Sync state between main window and detached sidebar
+      - [ ] Persist detached window state
+
+- [ ] Media Source Management
+  - [ ] URL quick-switching system
+    - [ ] URL presets for rapid source changes
+    - [ ] Keyboard shortcuts for URL switching
+    - [ ] URL history management
+  - [ ] Transition effects
+    - [ ] Fade in/out for video sources
+    - [ ] Cross-fade between compositions
+    - [ ] Configurable transition timing
+    - [ ] Transition triggering via MIDI
 
 - [ ] Pattern Management UI
   - [ ] Pattern library interface
@@ -97,6 +140,11 @@ An interactive audio-visual collage tool that allows users to create complex lay
     - [ ] Custom function input
     - [ ] Parameter animation controls
     - [ ] Parameter linking between layers
+    - [ ] LFO modulation system
+      - [ ] Multiple waveform types (sine, square, triangle, etc.)
+      - [ ] Per-parameter LFO assignment
+      - [ ] LFO rate and depth controls
+      - [ ] LFO sync options (free, tempo, other parameters)
   - [ ] Parameter UI Components
     - [ ] Parameter sliders and inputs
     - [ ] Function selector interface
@@ -218,6 +266,39 @@ An interactive audio-visual collage tool that allows users to create complex lay
 - [x] Implement layer ordering
 - [x] Add layer visibility controls
 - [x] Create layer grouping system
+- [ ] Implement transition effects
+  - [ ] Fade in/out controls for layers
+  - [ ] Cross-fade between layer states
+  - [ ] Transition timing configuration
+
+### Video Processing System
+- [ ] Create video source management
+  - [ ] Support for multiple instances of same source
+  - [ ] Independent time offset control
+  - [ ] Playback speed adjustment
+  - [ ] Custom video loop points
+- [ ] Implement video effect pipeline
+  - [ ] Real-time video processing
+  - [ ] Video shader effects
+  - [ ] Frame buffer manipulation
+- [ ] Add video synchronization
+  - [ ] Beat-synced video playback
+  - [ ] MIDI-triggered video events
+  - [ ] Frame-accurate video control
+
+### Pattern Scripting System
+- [ ] Create scripting infrastructure
+  - [ ] JavaScript execution environment
+  - [ ] Pattern script compiler/interpreter
+  - [ ] Script parameter binding
+- [ ] Implement script editor
+  - [ ] Code editing interface
+  - [ ] Script testing tools
+  - [ ] Debugging support
+- [ ] Add script scheduling system
+  - [ ] Time-based execution
+  - [ ] Event-driven execution
+  - [ ] Performance optimization
 
 ### Pattern System
 - [ ] Design pattern data structure
@@ -226,6 +307,11 @@ An interactive audio-visual collage tool that allows users to create complex lay
 - [ ] Add pattern animation system
 - [ ] Implement pattern presets
 - [ ] Create pattern export/import system
+- [ ] Build parameter modulation system
+  - [ ] LFO implementation for all parameters
+  - [ ] Multi-stage envelope generators
+  - [ ] Modulation matrix for complex parameter relationships
+  - [ ] Modulation visualization tools
 
 ### Hydra Integration
 - [ ] Set up Hydra.js
@@ -252,6 +338,7 @@ An interactive audio-visual collage tool that allows users to create complex lay
 6. [ ] Add MIDI support
 7. [ ] Develop user interface
 8. [ ] Test and refine features
+9. [ ] Implement parameter modulation with LFOs
 
 ## Notes
 - Consider using WebGL for better performance with complex patterns
@@ -261,6 +348,8 @@ An interactive audio-visual collage tool that allows users to create complex lay
 - Plan for future expansion of pattern types and effects
 - Use browser's IndexedDB for storing larger media files
 - Implement proper cleanup for media resources
+- Explore Electron integration for better windowing support
+- Consider WebRTC for sharing compositions between windows
 
 ## Setup Progress
 - [x] Initialized React + TypeScript project with Vite
