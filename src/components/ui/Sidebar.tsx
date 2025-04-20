@@ -8,6 +8,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect, useState } from 'react';
 import { LayerPatternTransformControls } from '../pattern/ui/LayerPatternTransformControls';
+import { TextPatternEditor } from '../pattern/ui/TextPatternEditor';
 
 interface DraggableLayerItemProps {
     layer: Layer;
@@ -21,6 +22,7 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
     const { patterns } = usePatternStore();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isPatternExpanded, setIsPatternExpanded] = useState(false);
+    const [isTextExpanded, setIsTextExpanded] = useState(false);
     const [videoDuration, setVideoDuration] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const layerRef = useRef<HTMLDivElement>(null);
@@ -124,6 +126,13 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // Check if the current pattern is a text pattern
+    const isTextPattern = () => {
+        if (!layer.patternId) return false;
+        const pattern = patterns.find(p => p.id === layer.patternId);
+        return pattern?.shapeMasks.some(mask => mask.type === 'text');
+    };
+
     return (
         <div
             ref={layerRef}
@@ -207,6 +216,23 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                                 <div className="mt-2">
                                     <LayerPatternTransformControls layerId={layer.id} />
                                 </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Add text pattern editor */}
+                    {layer.patternId && isTextPattern() && (
+                        <div className="mb-3 bg-white/5 p-2 rounded">
+                            <div
+                                className="flex justify-between items-center cursor-pointer"
+                                onClick={() => setIsTextExpanded(!isTextExpanded)}
+                            >
+                                <span className="text-white text-xs">Text Settings</span>
+                                {isTextExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                            </div>
+
+                            {isTextExpanded && (
+                                <TextPatternEditor layerId={layer.id} />
                             )}
                         </div>
                     )}
@@ -352,28 +378,33 @@ const Sidebar = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto">
+            <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto flex flex-col">
+                <div className="flex-grow">
+                    <CollapsibleSection title="Keyboard Shortcuts" defaultExpanded={false}>
+                        <div className="bg-white/5 p-2 rounded text-xs">
+                            <div><span className="font-semibold">1-9:</span> Select layer</div>
+                        </div>
+                    </CollapsibleSection>
 
-                <CollapsibleSection title="Keyboard Shortcuts" defaultExpanded={false}>
-                    <div className="bg-white/5 p-2 rounded text-xs">
-                        <div><span className="font-semibold">1-9:</span> Select layer</div>
-                    </div>
-                </CollapsibleSection>
+                    <CollapsibleSection title="Layers">
+                        <div>
+                            {layers.map((layer, index) => (
+                                <DraggableLayerItem
+                                    key={layer.id}
+                                    layer={layer}
+                                    index={index}
+                                    moveLayer={moveLayer}
+                                    isSelected={layer.id === selectedLayerId}
+                                />
+                            ))}
+                        </div>
+                        <AddLayerButton />
+                    </CollapsibleSection>
+                </div>
 
-                <CollapsibleSection title="Layers">
-                    <div>
-                        {layers.map((layer, index) => (
-                            <DraggableLayerItem
-                                key={layer.id}
-                                layer={layer}
-                                index={index}
-                                moveLayer={moveLayer}
-                                isSelected={layer.id === selectedLayerId}
-                            />
-                        ))}
-                    </div>
-                    <AddLayerButton />
-                </CollapsibleSection>
+                <div className="text-xs text-white/50 text-center">
+                    Toggle sidebar with <kbd className="px-1 py-0.5 bg-white/10 rounded">&#92;</kbd> key
+                </div>
             </div>
         </DndProvider>
     );

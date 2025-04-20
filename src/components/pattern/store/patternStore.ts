@@ -13,11 +13,19 @@ export type Pattern = {
   id: string;
   name: string;
   shapeMasks: Array<{
-    type: 'circle' | 'triangle' | 'rectangle' | 'custom';
+    type: 'circle' | 'triangle' | 'rectangle' | 'custom' | 'text';
     dimensions: { width: number; height: number };
     position: { x: number; y: number };
     rotation: number;
     pathData?: string;
+    textContent?: string;
+    textStyle?: {
+      fontFamily: string;
+      fontSize: number;
+      fontWeight: string;
+      textAlign: 'left' | 'center' | 'right';
+      lineHeight: number;
+    };
     transform?: Transform; // Individual shape transform
   }>;
   globalTransform?: Transform; // Global transform for the entire pattern
@@ -103,12 +111,33 @@ const createTriangleGrid = (): Pattern => ({
   globalTransform: { ...defaultTransform }
 });
 
+const createTextPattern = (): Pattern => ({
+  id: 'text',
+  name: 'Text',
+  shapeMasks: [{
+    type: 'text' as const,
+    dimensions: { width: 800, height: 600 },
+    position: { x: 20, y: 20 },
+    rotation: 0,
+    textContent: 'COLLAGE',
+    textStyle: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 120,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      lineHeight: 1.2
+    }
+  }],
+  globalTransform: { ...defaultTransform }
+});
+
 export const usePatternStore = create<PatternStore>((set) => ({
   patterns: [
     createRowOfRectangles(),
     createCenterCircle(),
     createSquigglyLines(),
     createTriangleGrid(),
+    createTextPattern(),
   ],
   currentPatternIndex: 0,
   setCurrentPatternIndex: (index) => set({ currentPatternIndex: index }),

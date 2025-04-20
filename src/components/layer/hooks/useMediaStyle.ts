@@ -1,6 +1,6 @@
 import { usePatternStore } from "../../pattern/store/patternStore";
 import { Layer } from "../types/layer.types";
-import { getShapePathData } from "../utils";
+import { getShapePathData, createTextSVG } from "../utils";
 
 export const useMediaStyle = (layer: Layer): React.CSSProperties => {
     const { patterns } = usePatternStore();
@@ -32,7 +32,7 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
 
     // Calculate transformed shapes with pattern transform applied
     let transformedShapes = shapeMasks.map((mask, index) => {
-        const { type, dimensions, position, rotation, pathData, transform } = mask;
+        const { type, dimensions, position, rotation, pathData, transform, textContent, textStyle } = mask;
         const individualTransform = transform || {
             scale: { x: 1, y: 1 },
             rotation: 0,
@@ -58,12 +58,24 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
         // Calculate final rotation
         const finalRotation = rotation + patternTransform.rotation + individualTransform.rotation;
 
+        // For text type, use layer text content if available, otherwise use pattern text
+        const finalTextContent = type === 'text'
+            ? (layer.textContent || textContent || 'TEXT')
+            : textContent;
+
+        // For text type, use layer text style if available, otherwise use pattern text style
+        const finalTextStyle = type === 'text'
+            ? (layer.textStyle || textStyle)
+            : textStyle;
+
         return {
             type,
             dimensions: { width: scaledWidth, height: scaledHeight },
             position: finalPosition,
             rotation: finalRotation,
-            pathData
+            pathData,
+            textContent: finalTextContent,
+            textStyle: finalTextStyle
         };
     });
 
@@ -95,14 +107,36 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
         height: '100%',
         objectFit: 'cover' as const,
         maskImage: transformedShapes.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
-            // Include rotation in SVG
-            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path transform='rotate(${mask.rotation} ${mask.dimensions.width / 2} ${mask.dimensions.height / 2})' d='${pathData}' fill='black'/></svg>")`;
+            if (mask.type === 'text') {
+                // Use the createTextSVG function for text masks
+                const svgContent = createTextSVG(
+                    mask.textContent || 'TEXT',
+                    mask.dimensions,
+                    mask.textStyle
+                );
+                const svgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svgContent)}`;
+                return `url("${svgDataUri}")`;
+            } else {
+                const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
+                // Include rotation in SVG
+                return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path transform='rotate(${mask.rotation} ${mask.dimensions.width / 2} ${mask.dimensions.height / 2})' d='${pathData}' fill='black'/></svg>")`;
+            }
         }).join(', '),
         WebkitMaskImage: transformedShapes.map(mask => {
-            const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
-            // Include rotation in SVG
-            return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path transform='rotate(${mask.rotation} ${mask.dimensions.width / 2} ${mask.dimensions.height / 2})' d='${pathData}' fill='black'/></svg>")`;
+            if (mask.type === 'text') {
+                // Use the createTextSVG function for text masks
+                const svgContent = createTextSVG(
+                    mask.textContent || 'TEXT',
+                    mask.dimensions,
+                    mask.textStyle
+                );
+                const svgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svgContent)}`;
+                return `url("${svgDataUri}")`;
+            } else {
+                const pathData = getShapePathData(mask.type, mask.dimensions, mask.pathData);
+                // Include rotation in SVG
+                return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><path transform='rotate(${mask.rotation} ${mask.dimensions.width / 2} ${mask.dimensions.height / 2})' d='${pathData}' fill='black'/></svg>")`;
+            }
         }).join(', '),
         maskSize: transformedShapes.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),
         WebkitMaskSize: transformedShapes.map(mask => `${mask.dimensions.width}px ${mask.dimensions.height}px`).join(', '),

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Layer, PatternTransform } from '../types/layer.types';
+import { Layer, PatternTransform, TextStyle } from '../types/layer.types';
 
 interface LayerState {
     layers: Layer[];
@@ -12,6 +12,8 @@ interface LayerState {
     setLayerTimeRange: (layerId: string, startTime: number, endTime: number) => void;
     setLayerLoopMode: (layerId: string, loopMode: 'normal' | 'forward-backward') => void;
     updateLayerPatternTransform: (layerId: string, patternTransform: Partial<PatternTransform>) => void;
+    setLayerTextContent: (layerId: string, textContent: string) => void;
+    updateLayerTextStyle: (layerId: string, textStyle: Partial<TextStyle>) => void;
     reorderLayers: (startIndex: number, endIndex: number) => void;
     setSelectedLayer: (layerId: string | null) => void;
 }
@@ -24,6 +26,15 @@ const defaultPatternTransform: PatternTransform = {
     spacing: 1,
     repetitions: 1,
     shapeCount: 5 // Default shape count
+};
+
+// Default text style
+const defaultTextStyle: TextStyle = {
+    fontFamily: 'Arial, sans-serif',
+    fontSize: 72,
+    fontWeight: 'normal',
+    textAlign: 'center',
+    lineHeight: 1.2
 };
 
 const createBaseLayer = (): Layer => ({
@@ -139,6 +150,31 @@ export const useLayerStore = create<LayerState>((set, get) => ({
                             ...currentTransform.position,
                             ...(patternTransform.position || {})
                         }
+                    }
+                } as Layer;
+            })
+        }));
+    },
+    setLayerTextContent: (layerId, textContent) => {
+        set((state) => ({
+            layers: state.layers.map(layer =>
+                layer.id === layerId
+                    ? { ...layer, textContent } as Layer
+                    : layer
+            )
+        }));
+    },
+    updateLayerTextStyle: (layerId, textStyle) => {
+        set((state) => ({
+            layers: state.layers.map(layer => {
+                if (layer.id !== layerId) return layer;
+
+                const currentStyle = layer.textStyle || { ...defaultTextStyle };
+                return {
+                    ...layer,
+                    textStyle: {
+                        ...currentStyle,
+                        ...textStyle
                     }
                 } as Layer;
             })

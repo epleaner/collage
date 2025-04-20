@@ -15,7 +15,15 @@ export interface Transform {
   opacity: number;
 }
 
-export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'custom';
+export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'custom' | 'text';
+
+export interface TextStyle {
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: string;
+  textAlign: 'left' | 'center' | 'right';
+  lineHeight: number; // Multiplier of fontSize (e.g., 1.2 means 1.2× fontSize)
+}
 
 export interface ShapeMask {
   type: ShapeType;
@@ -23,6 +31,8 @@ export interface ShapeMask {
   position: Position;
   rotation: number;
   pathData?: string;
+  textContent?: string;
+  textStyle?: TextStyle;
 }
 
 // Pattern transform for per-layer pattern configuration
@@ -50,6 +60,8 @@ export interface Layer {
   startTime?: number; // In seconds
   endTime?: number; // In seconds
   loopMode?: 'normal' | 'forward-backward'; // Loop mode: normal (default) or forward-backward
+  textContent?: string; // Text content for text patterns
+  textStyle?: TextStyle; // Style for text patterns
 }
 
 export interface LayerState {
