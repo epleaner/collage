@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Layer, PatternTransform, TextStyle } from '../types/layer.types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface LayerState {
     layers: Layer[];
@@ -14,6 +15,7 @@ interface LayerState {
     updateLayerPatternTransform: (layerId: string, patternTransform: Partial<PatternTransform>) => void;
     setLayerTextContent: (layerId: string, textContent: string) => void;
     updateLayerTextStyle: (layerId: string, textStyle: Partial<TextStyle>) => void;
+    duplicateLayer: (layerId: string) => void;
     reorderLayers: (startIndex: number, endIndex: number) => void;
     setSelectedLayer: (layerId: string | null) => void;
 }
@@ -179,6 +181,31 @@ export const useLayerStore = create<LayerState>((set) => ({
                 } as Layer;
             })
         }));
+    },
+    duplicateLayer: (layerId) => {
+        set((state) => {
+            const layerToDuplicate = state.layers.find(layer => layer.id === layerId);
+
+            if (!layerToDuplicate) return state;
+
+            // Create a deep copy of the layer
+            const duplicatedLayer: Layer = {
+                ...JSON.parse(JSON.stringify(layerToDuplicate)),
+                id: uuidv4() // Generate a new unique ID
+            };
+
+            // Find the index of the original layer
+            const originalIndex = state.layers.findIndex(layer => layer.id === layerId);
+
+            // Insert the duplicated layer after the original
+            const newLayers = [...state.layers];
+            newLayers.splice(originalIndex + 1, 0, duplicatedLayer);
+
+            return {
+                layers: newLayers,
+                selectedLayerId: duplicatedLayer.id // Select the new layer
+            };
+        });
     },
     reorderLayers: (startIndex, endIndex) => {
         set((state) => {

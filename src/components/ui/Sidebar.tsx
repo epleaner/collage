@@ -3,7 +3,7 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pause } from 'lucide-react';
+import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pause, Copy } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect, useState } from 'react';
@@ -18,11 +18,12 @@ interface DraggableLayerItemProps {
 }
 
 const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLayerItemProps) => {
-    const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer, setLayerTimeRange, setLayerLoopMode } = useLayerStore();
+    const { removeLayer, setLayerPattern, setLayerSrcUrl, updateLayer, setLayerTimeRange, setLayerLoopMode, duplicateLayer } = useLayerStore();
     const { patterns } = usePatternStore();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isPatternExpanded, setIsPatternExpanded] = useState(false);
     const [isTextExpanded, setIsTextExpanded] = useState(false);
+    const [isVideoExpanded, setIsVideoExpanded] = useState(false);
     const [videoDuration, setVideoDuration] = useState<number | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const layerRef = useRef<HTMLDivElement>(null);
@@ -147,6 +148,15 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                         <GripVertical size={12} className="text-white/50" />
                     </div>
                     <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors mr-1"
+                    >
+                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </button>
+
+                </div>
+                <div className="flex items-center">
+                    <button
                         onClick={() => updateLayer(layer.id, { visible: !layer.visible })}
                         className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors"
                     >
@@ -158,13 +168,12 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                     >
                         {layer.playing ? <Pause size={12} /> : <Play size={12} />}
                     </button>
-                </div>
-                <div className="flex items-center">
                     <button
-                        onClick={() => setIsExpanded(!isExpanded)}
+                        onClick={() => duplicateLayer(layer.id)}
                         className="bg-transparent border-none text-white p-1.5 rounded cursor-pointer flex items-center gap-1.5 hover:bg-white/10 transition-colors mr-1"
+                        title="Duplicate layer"
                     >
-                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        <Copy size={12} />
                     </button>
                     <button
                         onClick={() => removeLayer(layer.id)}
@@ -186,41 +195,41 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                             className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
                         />
                     </div>
-                    <div className="mb-2.5">
-                        <label className="block mb-1.5 text-white">Pattern</label>
-                        <select
-                            value={layer.patternId || ''}
-                            onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
-                            className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+
+                    {/* Pattern Settings Accordion */}
+                    <div className="mb-3 bg-white/5 p-2 rounded">
+                        <div
+                            className="flex justify-between items-center cursor-pointer"
+                            onClick={() => setIsPatternExpanded(!isPatternExpanded)}
                         >
-                            <option value="">No Pattern</option>
-                            {patterns.map(pattern => (
-                                <option key={pattern.id} value={pattern.id}>
-                                    {pattern.name}
-                                </option>
-                            ))}
-                        </select>
+                            <span className="text-white text-xs">Pattern Settings</span>
+                            {isPatternExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        </div>
+
+                        {isPatternExpanded && (
+                            <div className="mt-2">
+                                <div className="mb-2.5">
+                                    <label className="block mb-1.5 text-white text-xs">Pattern</label>
+                                    <select
+                                        value={layer.patternId || ''}
+                                        onChange={(e) => setLayerPattern(layer.id, e.target.value || null)}
+                                        className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                                    >
+                                        <option value="">No Pattern</option>
+                                        {patterns.map(pattern => (
+                                            <option key={pattern.id} value={pattern.id}>
+                                                {pattern.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {layer.patternId && <LayerPatternTransformControls layerId={layer.id} />}
+                            </div>
+                        )}
                     </div>
 
-                    {layer.patternId && (
-                        <div className="mb-3 bg-white/5 p-2 rounded">
-                            <div
-                                className="flex justify-between items-center cursor-pointer"
-                                onClick={() => setIsPatternExpanded(!isPatternExpanded)}
-                            >
-                                <span className="text-white text-xs">Pattern Settings</span>
-                                {isPatternExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                            </div>
-
-                            {isPatternExpanded && (
-                                <div className="mt-2">
-                                    <LayerPatternTransformControls layerId={layer.id} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Add text pattern editor */}
+                    {/* Text Settings Accordion */}
                     {layer.patternId && isTextPattern() && (
                         <div className="mb-3 bg-white/5 p-2 rounded">
                             <div
@@ -237,50 +246,63 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                         </div>
                     )}
 
+                    {/* Video Settings Accordion */}
                     {videoDuration !== null && (
-                        <>
-                            <div className="mb-2.5">
-                                <label className="block mb-1.5 text-white">Video Loop Mode</label>
-                                <select
-                                    value={layer.loopMode || 'normal'}
-                                    onChange={handleLoopModeChange}
-                                    className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
-                                >
-                                    <option value="normal">Normal Loop</option>
-                                    <option value="forward-backward">Forward-Backward</option>
-                                </select>
+                        <div className="mb-3 bg-white/5 p-2 rounded">
+                            <div
+                                className="flex justify-between items-center cursor-pointer"
+                                onClick={() => setIsVideoExpanded(!isVideoExpanded)}
+                            >
+                                <span className="text-white text-xs">Video Settings</span>
+                                {isVideoExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                             </div>
 
-                            <div className="mb-2.5">
-                                <label className="block mb-1.5 text-white">
-                                    Start Time: {formatTime(layer.startTime)} / {formatTime(videoDuration)}
-                                </label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={videoDuration}
-                                    step="0.1"
-                                    value={layer.startTime || 0}
-                                    onChange={handleStartTimeChange}
-                                    className="w-full"
-                                />
-                            </div>
+                            {isVideoExpanded && (
+                                <div className="mt-2">
+                                    <div className="mb-2.5">
+                                        <label className="block mb-1.5 text-white text-xs">Video Loop Mode</label>
+                                        <select
+                                            value={layer.loopMode || 'normal'}
+                                            onChange={handleLoopModeChange}
+                                            className="w-full p-1.5 bg-white/10 text-white border border-white/20 rounded focus:outline-none focus:border-white/40"
+                                        >
+                                            <option value="normal">Normal Loop</option>
+                                            <option value="forward-backward">Forward-Backward</option>
+                                        </select>
+                                    </div>
 
-                            <div className="mb-2.5">
-                                <label className="block mb-1.5 text-white">
-                                    End Time: {formatTime(layer.endTime)} / {formatTime(videoDuration)}
-                                </label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={videoDuration}
-                                    step="0.1"
-                                    value={layer.endTime || videoDuration}
-                                    onChange={handleEndTimeChange}
-                                    className="w-full"
-                                />
-                            </div>
-                        </>
+                                    <div className="mb-2.5">
+                                        <label className="block mb-1.5 text-white text-xs">
+                                            Start Time: {formatTime(layer.startTime)} / {formatTime(videoDuration)}
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max={videoDuration}
+                                            step="0.1"
+                                            value={layer.startTime || 0}
+                                            onChange={handleStartTimeChange}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    <div className="mb-2.5">
+                                        <label className="block mb-1.5 text-white text-xs">
+                                            End Time: {formatTime(layer.endTime)} / {formatTime(videoDuration)}
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max={videoDuration}
+                                            step="0.1"
+                                            value={layer.endTime || videoDuration}
+                                            onChange={handleEndTimeChange}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             )}

@@ -35,8 +35,8 @@ An interactive audio-visual collage tool that allows users to create complex lay
   - [x] Pattern definition system
   - [x] Pattern application to layers
   - [x] Pattern modification tools
-  - [ ] Pattern presets
   - [ ] Pattern animation system
+  - [ ] Persist patterns to DB
 
 - [ ] Advanced Video Control
   - [ ] Time offset management
@@ -228,13 +228,6 @@ An interactive audio-visual collage tool that allows users to create complex lay
 - [x] Implement proper state normalization
 - [x] Use selectors for derived state
 
-### Testing Strategy
-- [x] Unit tests for hooks and utilities
-- [x] Component tests for UI elements
-- [x] Integration tests for feature modules
-- [x] E2E tests for critical user flows
-- [x] Performance testing for complex operations
-
 ### Code Quality
 - [x] Implement ESLint with strict rules
 - [x] Use Prettier for consistent formatting
@@ -350,12 +343,3 @@ An interactive audio-visual collage tool that allows users to create complex lay
 - Implement proper cleanup for media resources
 - Explore Electron integration for better windowing support
 - Consider WebRTC for sharing compositions between windows
-
-## Setup Progress
-- [x] Initialized React + TypeScript project with Vite
-- [x] Installed core dependencies (zustand, midi.js, hydra-synth)
-- [x] Set up development tools (ESLint, Prettier, Husky)
-- [x] Created project structure following duck pattern
-- [x] Configured ESLint and Prettier
-- [x] Implemented core layer system
-- [ ] Next: Add basic pattern support 
