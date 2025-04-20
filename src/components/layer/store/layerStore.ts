@@ -78,7 +78,7 @@ const createPatternLayer = (): Layer => ({
     loopMode: 'normal'
 });
 
-export const useLayerStore = create<LayerState>((set, get) => ({
+export const useLayerStore = create<LayerState>((set) => ({
     layers: [createBaseLayer(), createPatternLayer()],
     selectedLayerId: null,
     addLayer: (layer) => set((state) => ({ layers: [...state.layers, layer] })),

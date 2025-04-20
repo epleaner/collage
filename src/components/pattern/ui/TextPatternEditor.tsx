@@ -1,5 +1,4 @@
 import { useLayerStore } from "../../layer/store/layerStore";
-import { TextStyle } from "../../layer/types/layer.types";
 
 interface TextPatternEditorProps {
     layerId: string;

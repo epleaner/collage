@@ -77,7 +77,7 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
 
     const [, drop] = useDrop({
         accept: 'LAYER',
-        hover: (item: { index: number }, monitor) => {
+        hover: (item: { index: number }) => {
             if (!layerRef.current) {
                 return;
             }

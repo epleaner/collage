@@ -4,8 +4,6 @@ export const getShapePathData = (
     shape: ShapeType,
     dimensions: { width: number; height: number },
     customPathData?: string,
-    textContent?: string,
-    textStyle?: TextStyle
 ) => {
     const { width, height } = dimensions;
     switch (shape) {
