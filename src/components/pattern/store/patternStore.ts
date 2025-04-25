@@ -36,7 +36,11 @@ type PatternStore = {
   currentPatternIndex: number;
   setCurrentPatternIndex: (index: number) => void;
   // New transform functions
-  updateShapeTransform: (patternId: string, shapeIndex: number, transform: Partial<Transform>) => void;
+  updateShapeTransform: (
+    patternId: string,
+    shapeIndex: number,
+    transform: Partial<Transform>
+  ) => void;
   updateGlobalTransform: (patternId: string, transform: Partial<Transform>) => void;
   resetTransforms: (patternId: string) => void;
   duplicatePattern: (patternId: string) => void;
@@ -58,22 +62,24 @@ const createRowOfRectangles = (): Pattern => ({
   shapeMasks: Array.from({ length: 5 }, (_, i) => ({
     type: 'rectangle' as const,
     dimensions: { width: 150, height: 200 },
-    position: { x: 20 + (i * 15), y: 50 },
-    rotation: 0
+    position: { x: 20 + i * 15, y: 50 },
+    rotation: 0,
   })),
-  globalTransform: { ...defaultTransform }
+  globalTransform: { ...defaultTransform },
 });
 
 const createCenterCircle = (): Pattern => ({
   id: 'circles',
   name: 'Circles',
-  shapeMasks: [{
-    type: 'circle' as const,
-    dimensions: { width: 400, height: 400 },
-    position: { x: 50, y: 50 },
-    rotation: 0
-  }],
-  globalTransform: { ...defaultTransform }
+  shapeMasks: [
+    {
+      type: 'circle' as const,
+      dimensions: { width: 400, height: 400 },
+      position: { x: 50, y: 50 },
+      rotation: 0,
+    },
+  ],
+  globalTransform: { ...defaultTransform },
 });
 
 const createSquigglyLines = (): Pattern => ({
@@ -82,17 +88,18 @@ const createSquigglyLines = (): Pattern => ({
   shapeMasks: Array.from({ length: 3 }, (_, i) => ({
     type: 'custom' as const,
     dimensions: { width: 400, height: 400 },
-    position: { x: 20 + (i * 30), y: 50 },
+    position: { x: 20 + i * 30, y: 50 },
     rotation: 0,
-    pathData: ['M 0,200',
+    pathData: [
+      'M 0,200',
       `C ${50 + i * 20},${150 + i * 20} ${100 + i * 20},${250 + i * 20} ${200},${200}`,
       `C ${300 - i * 20},${150 - i * 20} ${350 - i * 20},${250 - i * 20} ${400},${200}`,
       'L 400,400',
       'L 0,400',
-      'Z'
-    ].join(' ')
+      'Z',
+    ].join(' '),
   })),
-  globalTransform: { ...defaultTransform }
+  globalTransform: { ...defaultTransform },
 });
 
 const createTriangleGrid = (): Pattern => ({
@@ -104,31 +111,33 @@ const createTriangleGrid = (): Pattern => ({
     return {
       type: 'triangle' as const,
       dimensions: { width: 150, height: 150 },
-      position: { x: 25 + (col * 25), y: 25 + (row * 25) },
-      rotation: (i % 2) * 180
+      position: { x: 25 + col * 25, y: 25 + row * 25 },
+      rotation: (i % 2) * 180,
     };
   }),
-  globalTransform: { ...defaultTransform }
+  globalTransform: { ...defaultTransform },
 });
 
 const createTextPattern = (): Pattern => ({
   id: 'text',
   name: 'Text',
-  shapeMasks: [{
-    type: 'text' as const,
-    dimensions: { width: 800, height: 600 },
-    position: { x: 20, y: 20 },
-    rotation: 0,
-    textContent: 'COLLAGE',
-    textStyle: {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: 120,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      lineHeight: 1.2
-    }
-  }],
-  globalTransform: { ...defaultTransform }
+  shapeMasks: [
+    {
+      type: 'text' as const,
+      dimensions: { width: 800, height: 600 },
+      position: { x: 20, y: 20 },
+      rotation: 0,
+      textContent: '',
+      textStyle: {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: 120,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        lineHeight: 1.2,
+      },
+    },
+  ],
+  globalTransform: { ...defaultTransform },
 });
 
 export const usePatternStore = create<PatternStore>((set) => ({
@@ -145,7 +154,7 @@ export const usePatternStore = create<PatternStore>((set) => ({
   // Update transform for a specific shape in a pattern
   updateShapeTransform: (patternId, shapeIndex, newTransform) =>
     set((state) => {
-      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      const patternIndex = state.patterns.findIndex((p) => p.id === patternId);
       if (patternIndex === -1) return state;
 
       const newPatterns = [...state.patterns];
@@ -162,12 +171,12 @@ export const usePatternStore = create<PatternStore>((set) => ({
         ...newTransform,
         scale: {
           ...currentTransform.scale,
-          ...(newTransform.scale || {})
+          ...(newTransform.scale || {}),
         },
         position: {
           ...currentTransform.position,
-          ...(newTransform.position || {})
-        }
+          ...(newTransform.position || {}),
+        },
       };
 
       shapeMasks[shapeIndex] = shape;
@@ -180,7 +189,7 @@ export const usePatternStore = create<PatternStore>((set) => ({
   // Update global transform for an entire pattern
   updateGlobalTransform: (patternId, newTransform) =>
     set((state) => {
-      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      const patternIndex = state.patterns.findIndex((p) => p.id === patternId);
       if (patternIndex === -1) return state;
 
       const newPatterns = [...state.patterns];
@@ -192,12 +201,12 @@ export const usePatternStore = create<PatternStore>((set) => ({
         ...newTransform,
         scale: {
           ...currentTransform.scale,
-          ...(newTransform.scale || {})
+          ...(newTransform.scale || {}),
         },
         position: {
           ...currentTransform.position,
-          ...(newTransform.position || {})
-        }
+          ...(newTransform.position || {}),
+        },
       };
 
       newPatterns[patternIndex] = pattern;
@@ -208,7 +217,7 @@ export const usePatternStore = create<PatternStore>((set) => ({
   // Reset all transforms for a pattern
   resetTransforms: (patternId) =>
     set((state) => {
-      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      const patternIndex = state.patterns.findIndex((p) => p.id === patternId);
       if (patternIndex === -1) return state;
 
       const newPatterns = [...state.patterns];
@@ -218,9 +227,9 @@ export const usePatternStore = create<PatternStore>((set) => ({
       pattern.globalTransform = { ...defaultTransform };
 
       // Reset individual shape transforms
-      pattern.shapeMasks = pattern.shapeMasks.map(shape => ({
+      pattern.shapeMasks = pattern.shapeMasks.map((shape) => ({
         ...shape,
-        transform: undefined
+        transform: undefined,
       }));
 
       newPatterns[patternIndex] = pattern;
@@ -231,26 +240,26 @@ export const usePatternStore = create<PatternStore>((set) => ({
   // Duplicate a pattern with a new ID
   duplicatePattern: (patternId) =>
     set((state) => {
-      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      const patternIndex = state.patterns.findIndex((p) => p.id === patternId);
       if (patternIndex === -1) return state;
 
       const pattern = state.patterns[patternIndex];
       const newPattern = {
         ...JSON.parse(JSON.stringify(pattern)),
         id: `${pattern.id}-copy-${Date.now()}`,
-        name: `${pattern.name} (Copy)`
+        name: `${pattern.name} (Copy)`,
       };
 
       return {
         patterns: [...state.patterns, newPattern],
-        currentPatternIndex: state.patterns.length
+        currentPatternIndex: state.patterns.length,
       };
     }),
 
   // Update the number of shapes in a pattern
   updatePatternShapeCount: (patternId, count) =>
     set((state) => {
-      const patternIndex = state.patterns.findIndex(p => p.id === patternId);
+      const patternIndex = state.patterns.findIndex((p) => p.id === patternId);
       if (patternIndex === -1) return state;
 
       const newPatterns = [...state.patterns];
@@ -267,7 +276,7 @@ export const usePatternStore = create<PatternStore>((set) => ({
           type: 'rectangle' as const,
           dimensions: { width: 150, height: 200 },
           position: { x: 20, y: 50 },
-          rotation: 0
+          rotation: 0,
         };
 
         // Add new shapes based on the first shape
@@ -277,8 +286,8 @@ export const usePatternStore = create<PatternStore>((set) => ({
           // Update position for the new shape to create a pattern
           if (shapeType === 'rectangle' || shapeType === 'triangle') {
             newShape.position = {
-              x: baseShape.position.x + (i * 15),
-              y: baseShape.position.y
+              x: baseShape.position.x + i * 15,
+              y: baseShape.position.y,
             };
           } else if (shapeType === 'circle') {
             // For circles, arrange in a circular pattern
@@ -286,13 +295,13 @@ export const usePatternStore = create<PatternStore>((set) => ({
             const radius = 20;
             newShape.position = {
               x: baseShape.position.x + Math.cos(angle) * radius,
-              y: baseShape.position.y + Math.sin(angle) * radius
+              y: baseShape.position.y + Math.sin(angle) * radius,
             };
           } else if (shapeType === 'custom') {
             // For custom shapes, just offset them
             newShape.position = {
-              x: baseShape.position.x + (i * 30),
-              y: baseShape.position.y
+              x: baseShape.position.x + i * 30,
+              y: baseShape.position.y,
             };
           }
 
@@ -314,5 +323,5 @@ export const usePatternStore = create<PatternStore>((set) => ({
       newPatterns[patternIndex] = pattern;
 
       return { patterns: newPatterns };
-    })
-})); 
+    }),
+}));
