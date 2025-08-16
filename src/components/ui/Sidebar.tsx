@@ -3,7 +3,7 @@ import { useLayerStore } from '../layer/store/layerStore';
 import { usePatternStore } from '../pattern/store/patternStore';
 import { Layer } from '../layer/types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pause, Copy } from 'lucide-react';
+import { Trash2, Eye, EyeOff, GripVertical, ChevronDown, ChevronRight, Play, Pause, Copy, Info } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useRef, useEffect, useState } from 'react';
@@ -376,6 +376,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 const Sidebar = () => {
     const { isSidebarVisible } = useUIStore();
     const { layers, reorderLayers, selectedLayerId, setSelectedLayer } = useLayerStore();
+    const [showShortcuts, setShowShortcuts] = useState(false);
 
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
@@ -402,12 +403,6 @@ const Sidebar = () => {
         <DndProvider backend={HTML5Backend}>
             <div className="fixed right-0 top-0 w-[300px] h-screen bg-black/50 backdrop-blur-xl text-white p-5 box-border z-[9999] overflow-y-auto flex flex-col">
                 <div className="flex-grow">
-                    <CollapsibleSection title="Keyboard Shortcuts" defaultExpanded={false}>
-                        <div className="bg-white/5 p-2 rounded text-xs">
-                            <div><span className="font-semibold">1-9:</span> Select layer</div>
-                        </div>
-                    </CollapsibleSection>
-
                     <CollapsibleSection title="Layers">
                         <div>
                             {layers.map((layer, index) => (
@@ -422,6 +417,23 @@ const Sidebar = () => {
                         </div>
                         <AddLayerButton />
                     </CollapsibleSection>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 mb-2" onMouseEnter={() => setShowShortcuts(true)} onMouseLeave={() => setShowShortcuts(false)}>
+                    <button
+                        className="flex gap-2 bg-transparent border-none text-white/50 p-1.5 rounded cursor-pointer hover:bg-white/10 transition-colors"
+                        title="Keyboard shortcuts"
+                    >
+                        <Info size={16} /> Keyboard Shortcuts
+                    </button>
+                    {showShortcuts && (
+                        <div className="absolute bottom-[80px] bg-black/80 backdrop-blur-xl border border-white/20 rounded-lg p-3 shadow-xl max-w-[280px] z-[10000]">
+                            <div className="space-y-1 text-xs text-white/80">
+                                <div><span className="font-semibold">1-9:</span> Select layer</div>
+                                <div><span className="font-semibold">\:</span> Toggle sidebar</div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="text-xs text-white/50 text-center">
