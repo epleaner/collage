@@ -196,7 +196,6 @@ const DraggableLayerItem = ({ layer, index, moveLayer, isSelected }: DraggableLa
                         />
                     </div>
 
-                    {/* Pattern Settings Accordion */}
                     <div className="mb-3 bg-white/5 p-2 rounded">
                         <div
                             className="flex justify-between items-center cursor-pointer"

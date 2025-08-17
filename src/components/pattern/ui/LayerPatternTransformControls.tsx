@@ -7,6 +7,15 @@ type LayerPatternTransformControlsProps = {
     onTransformChange?: () => void;
 };
 
+export const defaultPatternTransform = {
+    scale: { x: 1, y: 1 },
+    rotation: 0,
+    position: { x: 0, y: 0 },
+    spacing: 1,
+    repetitions: 1,
+    shapeCount: 1
+};
+
 export const LayerPatternTransformControls: React.FC<LayerPatternTransformControlsProps> = ({
     layerId,
     onTransformChange,
@@ -25,14 +34,7 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
         return <div className="text-white/50 text-sm">Pattern not found.</div>;
     }
 
-    const patternTransform = layer.patternTransform || {
-        scale: { x: 1, y: 1 },
-        rotation: 0,
-        position: { x: 0, y: 0 },
-        spacing: 1,
-        repetitions: 1,
-        shapeCount: pattern.shapeMasks.length
-    };
+    const patternTransform = layer.patternTransform || defaultPatternTransform;
 
     const handleScaleChange = (axis: 'x' | 'y', value: number) => {
         updateLayerPatternTransform(layerId, {
@@ -71,12 +73,7 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
     const handleReset = () => {
         // Reset to default values
         updateLayerPatternTransform(layerId, {
-            scale: { x: 1, y: 1 },
-            rotation: 0,
-            position: { x: 0, y: 0 },
-            spacing: 1,
-            repetitions: 1,
-            shapeCount: pattern.shapeMasks.length
+            ...defaultPatternTransform
         });
         onTransformChange?.();
     };
@@ -144,10 +141,10 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
 
                 {/* Position Controls */}
                 <div>
-                    <label className="block text-white mb-1">Position</label>
+                    <label className="block text-white mb-1">Offset</label>
                     <div className="grid grid-cols-2 gap-2">
                         <div>
-                            <label className="text-white text-xs">X: {patternTransform.position.x.toFixed(0)}</label>
+                            <label className="text-white text-xs">X: {patternTransform.position.x.toFixed(0)}%</label>
                             <input
                                 type="range"
                                 min="-100"
@@ -159,7 +156,7 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
                             />
                         </div>
                         <div>
-                            <label className="text-white text-xs">Y: {patternTransform.position.y.toFixed(0)}</label>
+                            <label className="text-white text-xs">Y: {patternTransform.position.y.toFixed(0)}%</label>
                             <input
                                 type="range"
                                 min="-100"
