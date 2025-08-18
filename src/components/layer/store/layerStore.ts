@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Layer, PatternTransform, TextStyle } from '../types/layer.types';
 import { v4 as uuidv4 } from 'uuid';
 import { defaultPatternTransform } from '../../pattern/utils';
+import { LFOConfig } from '../../pattern/types/lfo.types';
 
 interface LayerState {
   layers: Layer[];
@@ -16,6 +17,18 @@ interface LayerState {
   updateLayerPatternTransform: (
     layerId: string,
     patternTransform: Partial<PatternTransform>
+  ) => void;
+  updateLayerLFO: (
+    layerId: string,
+    lfoParameter:
+      | 'scaleX'
+      | 'scaleY'
+      | 'rotation'
+      | 'positionX'
+      | 'positionY'
+      | 'spacing'
+      | 'repetitions',
+    lfoConfig: Partial<LFOConfig>
   ) => void;
   setLayerTextContent: (layerId: string, textContent: string) => void;
   updateLayerTextStyle: (layerId: string, textStyle: Partial<TextStyle>) => void;
@@ -47,10 +60,9 @@ const createBaseLayer = (): Layer => ({
   locked: false,
   zIndex: 0,
   patternId: null,
-  currentTime: 10,
   playing: true,
   startTime: 0,
-  endTime: undefined, // Will be set to video duration when loaded
+  endTime: undefined,
   loopMode: 'normal',
 });
 
@@ -69,10 +81,9 @@ const createPatternLayer = (): Layer => ({
   zIndex: 1,
   patternId: 'rectangles',
   patternTransform: { ...defaultPatternTransform },
-  currentTime: 200,
   playing: true,
   startTime: 0,
-  endTime: undefined, // Will be set to video duration when loaded
+  endTime: undefined,
   loopMode: 'normal',
 });
 
@@ -144,6 +155,33 @@ export const useLayerStore = create<LayerState>((set) => ({
               ...currentTransform.position,
               ...patternTransform.position,
             },
+          },
+        } as Layer;
+      }),
+    }));
+  },
+  updateLayerLFO: (layerId, lfoParameter, lfoConfig) => {
+    set((state) => ({
+      layers: state.layers.map((layer) => {
+        if (layer.id !== layerId) return layer;
+
+        const currentTransform = layer.patternTransform || { ...defaultPatternTransform };
+        const currentLfos = currentTransform.lfos || defaultPatternTransform.lfos!;
+        const currentLfoConfig = currentLfos[lfoParameter];
+
+        const updatedLfos = {
+          ...currentLfos,
+          [lfoParameter]: {
+            ...currentLfoConfig,
+            ...lfoConfig,
+          },
+        };
+
+        return {
+          ...layer,
+          patternTransform: {
+            ...currentTransform,
+            lfos: updatedLfos,
           },
         } as Layer;
       }),

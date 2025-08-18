@@ -1,3 +1,5 @@
+import { defaultTransformLFOs } from './types/lfo.types';
+
 export const defaultPatternTransform = {
   scale: { x: 1, y: 1 },
   rotation: 0,
@@ -5,4 +7,5 @@ export const defaultPatternTransform = {
   spacing: 1,
   repetitions: 1,
   shapeCount: 1,
+  lfos: defaultTransformLFOs,
 };

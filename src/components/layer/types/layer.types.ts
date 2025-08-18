@@ -15,6 +15,8 @@ export interface Transform {
   opacity: number;
 }
 
+import { TransformLFOs } from '../../pattern/types/lfo.types';
+
 export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'custom' | 'text';
 
 export interface TextStyle {
@@ -43,6 +45,7 @@ export interface PatternTransform {
   spacing: number;
   repetitions: number;
   shapeCount?: number;
+  lfos?: TransformLFOs; // LFO parameters for each transform parameter
 }
 
 export interface Layer {
@@ -54,7 +57,6 @@ export interface Layer {
   patternId: string | null;
   patternTransform?: PatternTransform; // Per-layer pattern configuration
   srcUrl: string;
-  currentTime?: number;
   playing?: boolean;
   frameRate?: number;
   startTime?: number; // In seconds
@@ -62,10 +64,11 @@ export interface Layer {
   loopMode?: 'normal' | 'forward-backward'; // Loop mode: normal (default) or forward-backward
   textContent?: string; // Text content for text patterns
   textStyle?: TextStyle; // Style for text patterns
+  videoElement?: HTMLVideoElement | null; // Reference to video DOM element for external access
 }
 
 export interface LayerState {
   layers: Layer[];
   selectedLayerId: string | null;
   activeLayerId: string | null;
-} 
+}

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLayerStore } from '../../layer/store/layerStore';
 import { usePatternStore } from '../store/patternStore';
 import { defaultPatternTransform } from '../utils';
+import { LFOControls } from './LFOControls';
+import { defaultTransformLFOs } from '../types/lfo.types';
 
 type LayerPatternTransformControlsProps = {
   layerId: string;
@@ -12,9 +14,12 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
   layerId,
   onTransformChange,
 }) => {
-  const { updateLayerPatternTransform } = useLayerStore();
+  const { updateLayerPatternTransform, updateLayerLFO } = useLayerStore();
   const { patterns } = usePatternStore();
   const layer = useLayerStore((state) => state.layers.find((l) => l.id === layerId));
+
+  // State for LFO section visibility
+  const [lfoSectionOpen, setLfoSectionOpen] = useState(false);
 
   if (!layer || !layer.patternId) {
     return <div className="text-sm text-white/50">No pattern selected for this layer.</div>;
@@ -27,6 +32,9 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
   }
 
   const patternTransform = layer.patternTransform || defaultPatternTransform;
+
+  // Get LFO configurations
+  const lfos = patternTransform.lfos || defaultTransformLFOs;
 
   const handleScaleChange = (axis: 'x' | 'y', value: number) => {
     updateLayerPatternTransform(layerId, {
@@ -211,6 +219,67 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
           >
             Reset
           </button>
+        </div>
+
+        {/* LFO Section */}
+        <div className="border-t border-white/10 pt-3">
+          <button
+            onClick={() => setLfoSectionOpen(!lfoSectionOpen)}
+            className="flex items-center justify-between w-full p-2 text-white rounded transition-colors bg-white/5 hover:bg-white/10 mb-3"
+          >
+            <span className="font-medium">LFO Controls</span>
+            <span
+              className={`transform transition-transform ${lfoSectionOpen ? 'rotate-180' : ''}`}
+            >
+              ▼
+            </span>
+          </button>
+
+          {lfoSectionOpen && (
+            <div className="space-y-3">
+              <LFOControls
+                label="Scale X"
+                lfoConfig={lfos.scaleX}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'scaleX', updates)}
+              />
+
+              <LFOControls
+                label="Scale Y"
+                lfoConfig={lfos.scaleY}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'scaleY', updates)}
+              />
+
+              <LFOControls
+                label="Rotation"
+                lfoConfig={lfos.rotation}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'rotation', updates)}
+              />
+
+              <LFOControls
+                label="Position X"
+                lfoConfig={lfos.positionX}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'positionX', updates)}
+              />
+
+              <LFOControls
+                label="Position Y"
+                lfoConfig={lfos.positionY}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'positionY', updates)}
+              />
+
+              <LFOControls
+                label="Spacing"
+                lfoConfig={lfos.spacing}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'spacing', updates)}
+              />
+
+              <LFOControls
+                label="Repetitions"
+                lfoConfig={lfos.repetitions}
+                onUpdate={(updates) => updateLayerLFO(layerId, 'repetitions', updates)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
