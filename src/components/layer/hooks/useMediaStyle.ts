@@ -21,11 +21,6 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
 
   // Refs for animation loop
   const animationFrameRef = useRef<number | undefined>(undefined);
-  const lastTimeRef = useRef<number>(0);
-  const interpolationRef = useRef<{ factor: number; lastValues: typeof animatedTransform | null }>({
-    factor: 0,
-    lastValues: null,
-  });
 
   // Use the layer-specific pattern transform if available, otherwise fall back to global transform
   const patternTransform = useMemo(() => {
@@ -129,14 +124,6 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
       // Use layer's currentTime if available, otherwise use performance.now()
       const currentTime = layer.videoElement?.currentTime || performance.now() / 1000;
 
-      const deltaTime = currentTime - lastTimeRef.current;
-
-      // Smooth interpolation factor for consistent frame pacing
-      const targetDelta = 1 / 60; // Target 60fps
-      interpolationRef.current.factor = Math.min(deltaTime / targetDelta, 1);
-
-      lastTimeRef.current = currentTime;
-
       // Calculate LFO values for enabled LFOs only
       const lfoValues = calculateEnabledLFOValues(currentTime, enabledLFOs, lfos);
 
@@ -169,49 +156,10 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
           : patternTransform.repetitions,
       };
 
-      // Smooth interpolation for value changes
-      if (interpolationRef.current.lastValues) {
-        const factor = interpolationRef.current.factor * 0.15; // Smoothing factor
-        const smoothTransform = {
-          scale: {
-            x: lerp(interpolationRef.current.lastValues.scale.x, newTransform.scale.x, factor),
-            y: lerp(interpolationRef.current.lastValues.scale.y, newTransform.scale.y, factor),
-          },
-          rotation: lerp(
-            interpolationRef.current.lastValues.rotation,
-            newTransform.rotation,
-            factor
-          ),
-          position: {
-            x: lerp(
-              interpolationRef.current.lastValues.position.x,
-              newTransform.position.x,
-              factor
-            ),
-            y: lerp(
-              interpolationRef.current.lastValues.position.y,
-              newTransform.position.y,
-              factor
-            ),
-          },
-          spacing: lerp(interpolationRef.current.lastValues.spacing, newTransform.spacing, factor),
-          repetitions: Math.round(
-            lerp(interpolationRef.current.lastValues.repetitions, newTransform.repetitions, factor)
-          ),
-        };
-        setAnimatedTransform(smoothTransform);
-        interpolationRef.current.lastValues = smoothTransform;
-      } else {
-        setAnimatedTransform(newTransform);
-        interpolationRef.current.lastValues = newTransform;
-      }
+      // Direct value setting without interpolation
+      setAnimatedTransform(newTransform);
 
       animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    // Helper function for linear interpolation
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor;
     };
 
     // Start animation loop
