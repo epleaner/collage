@@ -251,16 +251,16 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
             <label className="text-white">Scale Y: {patternTransform.scale.y.toFixed(2)}</label>
             <InlineLFOControls parameter="scaleY" lfoConfig={lfos.scaleY} />
           </div>
+          <input
+            type="range"
+            min="0.1"
+            max="10"
+            step="0.1"
+            value={patternTransform.scale.y}
+            onChange={(e) => handleScaleChange('y', parseFloat(e.target.value))}
+            className="w-full"
+          />
         </div>
-        <input
-          type="range"
-          min="0.1"
-          max="10"
-          step="0.1"
-          value={patternTransform.scale.x}
-          onChange={(e) => handleScaleChange('x', parseFloat(e.target.value))}
-          className="w-full"
-        />
 
         {/* Rotation Control */}
         <div>
@@ -281,43 +281,39 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
 
         {/* Position Controls */}
         <div>
-          <label className="block mb-1 text-white">Offset</label>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs text-white">
-                  X: {patternTransform.position.x.toFixed(0)}%
-                </label>
-                <InlineLFOControls parameter="positionX" lfoConfig={lfos.positionX} />
-              </div>
-              <input
-                type="range"
-                min="-100"
-                max="100"
-                step="1"
-                value={patternTransform.position.x}
-                onChange={(e) => handlePositionChange('x', parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs text-white">
-                  Y: {patternTransform.position.y.toFixed(0)}%
-                </label>
-                <InlineLFOControls parameter="positionY" lfoConfig={lfos.positionY} />
-              </div>
-              <input
-                type="range"
-                min="-100"
-                max="100"
-                step="1"
-                value={patternTransform.position.y}
-                onChange={(e) => handlePositionChange('y', parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
+          <div className="flex justify-between items-center mb-1">
+            <label className="text-white">
+              Position X: {patternTransform.position.x.toFixed(0)}%
+            </label>
+            <InlineLFOControls parameter="positionX" lfoConfig={lfos.positionX} />
           </div>
+          <input
+            type="range"
+            min="-100"
+            max="100"
+            step="1"
+            value={patternTransform.position.x}
+            onChange={(e) => handlePositionChange('x', parseFloat(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <label className="text-white">
+              Position Y: {patternTransform.position.y.toFixed(0)}%
+            </label>
+            <InlineLFOControls parameter="positionY" lfoConfig={lfos.positionY} />
+          </div>
+          <input
+            type="range"
+            min="-100"
+            max="100"
+            step="1"
+            value={patternTransform.position.y}
+            onChange={(e) => handlePositionChange('y', parseFloat(e.target.value))}
+            className="w-full"
+          />
         </div>
 
         {/* Spacing Control - only show for patterns with multiple shapes */}

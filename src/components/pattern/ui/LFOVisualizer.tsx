@@ -26,8 +26,24 @@ export const LFOVisualizer: React.FC<LFOVisualizerProps> = ({ lfoConfig }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    // Set up high-DPI rendering for sharp lines
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = 20;
+    const displayHeight = 15;
+
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+
+    ctx.scale(dpr, dpr);
+
+    // Enable antialiasing for smooth lines
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    const width = displayWidth;
+    const height = displayHeight;
     const centerY = height / 2;
 
     const animate = (timestamp: number) => {
@@ -82,5 +98,5 @@ export const LFOVisualizer: React.FC<LFOVisualizerProps> = ({ lfoConfig }) => {
     return null;
   }
 
-  return <canvas ref={canvasRef} width={20} height={15} />;
+  return <canvas ref={canvasRef} />;
 };
