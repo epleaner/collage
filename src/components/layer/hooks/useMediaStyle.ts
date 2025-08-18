@@ -1,5 +1,5 @@
 import { usePatternStore } from '../../pattern/store/patternStore';
-import { defaultPatternTransform } from '../../pattern/ui/LayerPatternTransformControls';
+import { defaultPatternTransform } from '../../pattern/utils';
 import { Layer } from '../types/layer.types';
 import { getShapePathData, createTextSVG } from '../utils';
 
@@ -20,12 +20,12 @@ export const useMediaStyle = (layer: Layer): React.CSSProperties => {
   // Use the layer-specific pattern transform if available, otherwise fall back to global transform
   const patternTransform = layer.patternTransform ||
     pattern.globalTransform || {
-    scale: { x: 1, y: 1 },
-    rotation: 0,
-    position: { x: 0, y: 0 },
-    spacing: 1,
-    repetitions: 1,
-  };
+      scale: { x: 1, y: 1 },
+      rotation: 0,
+      position: { x: 0, y: 0 },
+      spacing: 1,
+      repetitions: 1,
+    };
 
   // Determine the number of shapes to use - from layer settings or pattern definition
   const shapeCount = layer.patternTransform?.shapeCount || pattern.shapeMasks.length;
