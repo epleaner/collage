@@ -7,6 +7,7 @@ import { defaultTransformLFOs, LFOConfig, WaveformType } from '../types/lfo.type
 import { Switch } from '../../ui/switch';
 import { Settings } from 'lucide-react';
 import { cn } from '../../../lib/utils';
+import { LFOVisualizer } from './LFOVisualizer';
 
 type LayerPatternTransformControlsProps = {
   layerId: string;
@@ -101,6 +102,7 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
   }) => (
     <div className="flex gap-2 items-center">
       <div className="flex gap-1 items-center">
+        <LFOVisualizer lfoConfig={lfoConfig} />
         <Switch checked={lfoConfig.enabled} onCheckedChange={() => handleLFOToggle(parameter)} />
         <span className={cn('text-xs text-white')}>LFO</span>
 
@@ -249,52 +251,16 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
             <label className="text-white">Scale Y: {patternTransform.scale.y.toFixed(2)}</label>
             <InlineLFOControls parameter="scaleY" lfoConfig={lfos.scaleY} />
           </div>
-          <input
-            type="range"
-            min="0.1"
-            max="10"
-            step="0.1"
-            value={patternTransform.scale.y}
-            onChange={(e) => handleScaleChange('y', parseFloat(e.target.value))}
-            className="w-full"
-          />
         </div>
-
-        {/* Offset Controls */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="text-white">
-              Offset X: {patternTransform.position.x.toFixed(0)}%
-            </label>
-            <InlineLFOControls parameter="positionX" lfoConfig={lfos.positionX} />
-          </div>
-          <input
-            type="range"
-            min="-100"
-            max="100"
-            step="1"
-            value={patternTransform.position.x}
-            onChange={(e) => handlePositionChange('x', parseFloat(e.target.value))}
-            className="w-full"
-          />
-        </div>
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="text-white">
-              Offset Y: {patternTransform.position.y.toFixed(0)}%
-            </label>
-            <InlineLFOControls parameter="positionY" lfoConfig={lfos.positionY} />
-          </div>
-          <input
-            type="range"
-            min="-100"
-            max="100"
-            step="1"
-            value={patternTransform.position.y}
-            onChange={(e) => handlePositionChange('y', parseFloat(e.target.value))}
-            className="w-full"
-          />
-        </div>
+        <input
+          type="range"
+          min="0.1"
+          max="10"
+          step="0.1"
+          value={patternTransform.scale.x}
+          onChange={(e) => handleScaleChange('x', parseFloat(e.target.value))}
+          className="w-full"
+        />
 
         {/* Rotation Control */}
         <div>
@@ -311,6 +277,47 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
             onChange={(e) => handleRotationChange(parseFloat(e.target.value))}
             className="w-full"
           />
+        </div>
+
+        {/* Position Controls */}
+        <div>
+          <label className="block mb-1 text-white">Offset</label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs text-white">
+                  X: {patternTransform.position.x.toFixed(0)}%
+                </label>
+                <InlineLFOControls parameter="positionX" lfoConfig={lfos.positionX} />
+              </div>
+              <input
+                type="range"
+                min="-100"
+                max="100"
+                step="1"
+                value={patternTransform.position.x}
+                onChange={(e) => handlePositionChange('x', parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs text-white">
+                  Y: {patternTransform.position.y.toFixed(0)}%
+                </label>
+                <InlineLFOControls parameter="positionY" lfoConfig={lfos.positionY} />
+              </div>
+              <input
+                type="range"
+                min="-100"
+                max="100"
+                step="1"
+                value={patternTransform.position.y}
+                onChange={(e) => handlePositionChange('y', parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Spacing Control - only show for patterns with multiple shapes */}
