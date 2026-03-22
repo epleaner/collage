@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLayerStore } from '../../layer/store/layerStore';
 import { usePatternStore } from '../store/patternStore';
 import { defaultPatternTransform } from '../utils';
@@ -21,6 +21,9 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
   const { updateLayerPatternTransform, updateLayerLFO } = useLayerStore();
   const { patterns } = usePatternStore();
   const layer = useLayerStore((state) => state.layers.find((l) => l.id === layerId));
+
+  // State to manage popover open states for each LFO parameter
+  const [popoverStates, setPopoverStates] = useState<Record<string, boolean>>({});
 
   const waveformOptions: { value: WaveformType; label: string }[] = [
     { value: 'sine', label: 'Sine' },
@@ -92,6 +95,10 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
     updateLayerLFO(layerId, parameter, { enabled: !currentLFO.enabled });
   };
 
+  const handlePopoverOpenChange = (parameter: string, open: boolean) => {
+    setPopoverStates((prev) => ({ ...prev, [parameter]: open }));
+  };
+
   // Component for inline LFO controls
   const InlineLFOControls = ({
     parameter,
@@ -99,117 +106,180 @@ export const LayerPatternTransformControls: React.FC<LayerPatternTransformContro
   }: {
     parameter: keyof typeof lfos;
     lfoConfig: LFOConfig;
-  }) => (
-    <div className="flex gap-2 items-center">
-      <div className="flex gap-1 items-center">
-        <LFOVisualizer lfoConfig={lfoConfig} />
-        <Switch checked={lfoConfig.enabled} onCheckedChange={() => handleLFOToggle(parameter)} />
-        <span className={cn('text-xs text-white')}>LFO</span>
+  }) => {
+    const isPopoverOpen = popoverStates[parameter] || false;
 
-        <Popover>
-          <PopoverTrigger asChild disabled={!lfoConfig.enabled}>
-            <Settings
-              size={10}
-              className={cn(lfoConfig.enabled ? 'text-white' : 'text-white/30')}
-            />
-          </PopoverTrigger>
-          <PopoverContent className="w-64">
-            <div className="space-y-3">
-              {/* Waveform dropdown */}
-              <div>
-                <label className="block mb-1 text-xs text-white/80">Waveform</label>
-                <select
-                  value={lfoConfig.waveform}
-                  onChange={(e) =>
-                    updateLayerLFO(layerId, parameter, { waveform: e.target.value as WaveformType })
-                  }
-                  className="px-2 py-1 w-full text-xs text-white rounded border bg-white/10 border-white/20 focus:border-blue-400 focus:outline-none"
-                >
-                  {waveformOptions.map((option) => (
-                    <option key={option.value} value={option.value} className="bg-gray-800">
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+    // Local state for smooth slider interactions
+    const [localValues, setLocalValues] = useState({
+      frequency: lfoConfig.frequency,
+      amplitude: lfoConfig.amplitude,
+      phase: lfoConfig.phase,
+      offset: lfoConfig.offset,
+    });
 
-              {/* Frequency */}
-              <div>
-                <label className="block mb-1 text-xs text-white/80">
-                  Frequency: {lfoConfig.frequency.toFixed(2)} Hz
-                </label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  value={lfoConfig.frequency}
-                  onChange={(e) =>
-                    updateLayerLFO(layerId, parameter, { frequency: parseFloat(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
+    // Update local state when LFO config changes from external sources
+    React.useEffect(() => {
+      setLocalValues({
+        frequency: lfoConfig.frequency,
+        amplitude: lfoConfig.amplitude,
+        phase: lfoConfig.phase,
+        offset: lfoConfig.offset,
+      });
+    }, [lfoConfig.frequency, lfoConfig.amplitude, lfoConfig.phase, lfoConfig.offset]);
 
-              {/* Amplitude */}
-              <div>
-                <label className="block mb-1 text-xs text-white/80">
-                  Amplitude: {lfoConfig.amplitude.toFixed(2)}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={lfoConfig.amplitude}
-                  onChange={(e) =>
-                    updateLayerLFO(layerId, parameter, { amplitude: parseFloat(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
+    const handleSliderChange = (property: keyof typeof localValues, value: number) => {
+      setLocalValues((prev) => ({ ...prev, [property]: value }));
+    };
 
-              {/* Phase */}
-              <div>
-                <label className="block mb-1 text-xs text-white/80">
-                  Phase: {lfoConfig.phase.toFixed(0)}°
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  step="1"
-                  value={lfoConfig.phase}
-                  onChange={(e) =>
-                    updateLayerLFO(layerId, parameter, { phase: parseFloat(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
+    const handleSliderCommit = (property: keyof typeof localValues, value: number) => {
+      updateLayerLFO(layerId, parameter, { [property]: value });
+    };
 
-              {/* Offset */}
-              <div>
-                <label className="block mb-1 text-xs text-white/80">
-                  Offset: {lfoConfig.offset.toFixed(2)}
-                </label>
-                <input
-                  type="range"
-                  min="-1"
-                  max="1"
-                  step="0.01"
-                  value={lfoConfig.offset}
-                  onChange={(e) =>
-                    updateLayerLFO(layerId, parameter, { offset: parseFloat(e.target.value) })
-                  }
-                  className="w-full"
-                />
+    return (
+      <div className="flex gap-2 items-center">
+        <div className="flex gap-1 items-center">
+          <LFOVisualizer lfoConfig={lfoConfig} />
+          <Switch checked={lfoConfig.enabled} onCheckedChange={() => handleLFOToggle(parameter)} />
+          <span className={cn('text-xs text-white')}>LFO</span>
+
+          <Popover
+            open={isPopoverOpen}
+            onOpenChange={(open) => handlePopoverOpenChange(parameter, open)}
+          >
+            <PopoverTrigger asChild disabled={!lfoConfig.enabled}>
+              <Settings
+                size={10}
+                className={cn(lfoConfig.enabled ? 'text-white' : 'text-white/30')}
+              />
+            </PopoverTrigger>
+            <PopoverContent className="w-64">
+              <div className="space-y-3">
+                {/* Waveform dropdown */}
+                <div>
+                  <label className="block mb-1 text-xs text-white/80">Waveform</label>
+                  <select
+                    value={lfoConfig.waveform}
+                    onChange={(e) =>
+                      updateLayerLFO(layerId, parameter, {
+                        waveform: e.target.value as WaveformType,
+                      })
+                    }
+                    className="px-2 py-1 w-full text-xs text-white rounded border bg-white/10 border-white/20 focus:border-blue-400 focus:outline-none"
+                  >
+                    {waveformOptions.map((option) => (
+                      <option key={option.value} value={option.value} className="bg-gray-800">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Frequency */}
+                <div>
+                  <label className="block mb-1 text-xs text-white/80">
+                    Frequency: {localValues.frequency.toFixed(2)} Hz
+                  </label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="10"
+                    step="0.1"
+                    value={localValues.frequency}
+                    onChange={(e) => handleSliderChange('frequency', parseFloat(e.target.value))}
+                    onMouseUp={(e) =>
+                      handleSliderCommit(
+                        'frequency',
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    onPointerUp={(e) =>
+                      handleSliderCommit(
+                        'frequency',
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Amplitude */}
+                <div>
+                  <label className="block mb-1 text-xs text-white/80">
+                    Amplitude: {localValues.amplitude.toFixed(2)}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={localValues.amplitude}
+                    onChange={(e) => handleSliderChange('amplitude', parseFloat(e.target.value))}
+                    onMouseUp={(e) =>
+                      handleSliderCommit(
+                        'amplitude',
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    onPointerUp={(e) =>
+                      handleSliderCommit(
+                        'amplitude',
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Phase */}
+                <div>
+                  <label className="block mb-1 text-xs text-white/80">
+                    Phase: {localValues.phase.toFixed(0)}°
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="360"
+                    step="1"
+                    value={localValues.phase}
+                    onChange={(e) => handleSliderChange('phase', parseFloat(e.target.value))}
+                    onMouseUp={(e) =>
+                      handleSliderCommit('phase', parseFloat((e.target as HTMLInputElement).value))
+                    }
+                    onPointerUp={(e) =>
+                      handleSliderCommit('phase', parseFloat((e.target as HTMLInputElement).value))
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Offset */}
+                <div>
+                  <label className="block mb-1 text-xs text-white/80">
+                    Offset: {localValues.offset.toFixed(2)}
+                  </label>
+                  <input
+                    type="range"
+                    min="-1"
+                    max="1"
+                    step="0.01"
+                    value={localValues.offset}
+                    onChange={(e) => handleSliderChange('offset', parseFloat(e.target.value))}
+                    onMouseUp={(e) =>
+                      handleSliderCommit('offset', parseFloat((e.target as HTMLInputElement).value))
+                    }
+                    onPointerUp={(e) =>
+                      handleSliderCommit('offset', parseFloat((e.target as HTMLInputElement).value))
+                    }
+                    className="w-full"
+                  />
+                </div>
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-3">
